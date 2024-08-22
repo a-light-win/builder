@@ -1,0 +1,4 @@
+set unstable := true
+
+# build/clean docker images of zig
+mod zig 'zig/Justfile'

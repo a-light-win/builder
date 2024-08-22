@@ -1,4 +1,4 @@
 set unstable := true
 
-# build/clean docker images of zig
-mod zig 'dockerfiles/zig/build.just'
+# Build images of builders
+mod builder 'dockerfiles/Justfile'
