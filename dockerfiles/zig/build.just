@@ -17,8 +17,8 @@ clean version:
   fi
 
 [private]
-build-all version: (build-zig version 'aarch64' 'linux') \
-  (build-zig version 'x86_64' 'linux')
+build-all version: (build-zig version 'x86_64' 'linux') \
+  (build-zig version 'aarch64' 'linux')
 
 [private, script('bash')]
 build-zig version arch platform: (download-zig version arch platform)
