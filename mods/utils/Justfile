@@ -1,0 +1,8 @@
+set unstable := true
+
+[private, script('bash')]
+go-arch arch:
+  go_arch={{ if arch == 'x86_64' { 'amd64' } \
+             else if arch == 'aarch64' { 'arm64' } \
+             else { arch } }}
+  echo $go_arch

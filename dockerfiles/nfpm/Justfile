@@ -1,0 +1,11 @@
+set unstable := true
+
+import '../../lib/exec_alias.just'
+
+nfpm_download_url := 'https://github.com/goreleaser/nfpm/releases/download'
+
+[private, script('bash')]
+download-nfpm version arch:
+  arch=$({{ utils }} go-arch {{ arch }})
+  name=nfpm_{{ version }}_${arch}
+  curl -L -o ${name}.deb -C - {{ nfpm_download_url }}/v{{ version }}/${name}.deb
