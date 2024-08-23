@@ -1,0 +1,14 @@
+
+[no-cd]
+bootstrap dest update="no":
+  mkdir -p "{{ dest }}"
+  cd "{{ dest }}"
+  
+  if [ ! -e builder ]; then
+    git clone https://github.com/a-light-win/builder
+  fi
+
+  if [ "{{ update }}" != "no" ]; then
+    cd builder
+    git pull
+  fi
