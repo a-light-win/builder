@@ -4,22 +4,21 @@ import '../../lib/podman.just'
 import '../vars.just'
 
 self := just_executable() + ' -f ' + source_file()
-image := base_image_path / 'debian:'
 
 [script('bash')]
-build version *archs:
+build *archs:
   archs='{{ if archs == '' { default_archs } else { archs } }}'
   for arch in $archs ; do
-    {{ self }} build-debian {{ version }} $arch || exit 1
+    {{ self }} build-debian $arch || exit 1
   done
 
 [script('bash')]
 clean version: \
-  (podman_manifest_clean image + version)
+  (podman_manifest_clean debian_image + ":" + version)
 
 [private]
-build-debian version arch: \
-  (podman_manifest image + version)
+build-debian arch: \
+  (podman_manifest debian_image_full)
   podman build --platform linux/{{ arch }} \
-    --manifest="{{ image + version }}" \
-    --build-arg VERSION={{ version }} .
+    --manifest="{{ debian_image_full }}" \
+    --build-arg VERSION="{{ debian_version }}" .

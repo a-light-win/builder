@@ -1,5 +1,4 @@
 set unstable := true
-set fallback
 
 self := just_executable() + ' -f ' + source_file()
 
@@ -9,16 +8,16 @@ import '../vars.just'
 
 # build a multi-arch image for zig
 [script('bash')]
-build version *archs:
+build *archs:
   archs='{{ if archs == '' { default_archs } else { archs } }}'
   for arch in $archs ; do
-    {{ self }} build-zig {{ version }} $arch || exit 1
+    {{ self }} build-zig $arch || exit 1
   done
 
 # clean up docker image of zig by version
 [script('bash')]
 clean version: \
-  (podman_manifest_clean base_image_path / 'zig:' + version)
+  (podman_manifest_clean zig_image + ':' + version)
 
 [private, script('bash')]
 download version arch platform:
@@ -33,11 +32,11 @@ download version arch platform:
   tar xf ${name}.tar.xz
 
 [private, script('bash')]
-build-zig version arch platform='linux': \
-  (download version arch platform) \
-  (podman_manifest base_image_path / 'zig:' + version)
+build-zig arch platform='linux': \
+  (download zig_version arch platform) \
+  (podman_manifest zig_image_full)
   podman build --platform {{ platform }}/{{ arch }} \
-    --manifest="{{ base_image_path / 'zig:' + version }}" \
-    --build-arg BASE_IMAGE_PATH={{ base_image_path }} \
+    --manifest="{{ zig_image_full }}" \
+    --build-arg BASE_IMAGE={{ debian_image_full }} \
     --build-arg ARCH={{ arch }} \
-    --build-arg VERSION={{ version }} .
+    --build-arg VERSION={{ zig_version }} .
