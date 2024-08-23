@@ -34,7 +34,7 @@ download version arch platform:
 [private, script('bash')]
 build-zig arch platform='linux': \
   (download zig_version arch platform) \
-  (podman_manifest zig_image_full)
+  (podman_manifest zig_image_full builder_source builder_licenses)
   podman build --platform {{ platform }}/{{ arch }} \
     --manifest="{{ zig_image_full }}" \
     --build-arg BASE_IMAGE={{ debian_image_full }} \

@@ -24,7 +24,7 @@ download-nfpm version arch:
 [private, script('bash')]
 build-nfpm arch: \
   (download-nfpm nfpm_version arch) \
-  (podman_manifest nfpm_image_full)
+  (podman_manifest nfpm_image_full builder_source builder_licenses)
   set +x
   arch=$({{ utils }} go-arch {{ arch }})
   name="nfpm_{{ nfpm_version }}_${arch}"

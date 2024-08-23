@@ -18,7 +18,7 @@ clean version: \
 
 [private]
 build-debian arch: \
-  (podman_manifest debian_image_full)
+  (podman_manifest debian_image_full builder_source builder_licenses 'Base image for builder')
   podman build --platform linux/{{ arch }} \
     --manifest="{{ debian_image_full }}" \
     --build-arg VERSION="{{ debian_version }}" .
