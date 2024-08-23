@@ -1,9 +1,10 @@
 set unstable := true
 
-self := just_executable() + ' -f ' + source_file()
-
 import '../../lib/podman.just'
 import '../vars.just'
+
+self := just_executable() + ' -f ' + source_file()
+image := base_image_path / 'debian:'
 
 [script('bash')]
 build version *archs:
@@ -14,11 +15,11 @@ build version *archs:
 
 [script('bash')]
 clean version: \
-  (podman_manifest_clean base_image_path / 'debian:' + version)
+  (podman_manifest_clean image + version)
 
 [private]
 build-debian version arch: \
-  (podman_manifest base_image_path / 'debian:' + version)
+  (podman_manifest image + version)
   podman build --platform linux/{{ arch }} \
-    --manifest="{{ base_image_path / 'debian:' + version }}" \
+    --manifest="{{ image + version }}" \
     --build-arg VERSION={{ version }} .
