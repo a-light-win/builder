@@ -1,4 +1,5 @@
 set unstable := true
+set dotenv-load := true
 
 import '../../lib/exec_alias.just'
 import '../../lib/podman.just'
