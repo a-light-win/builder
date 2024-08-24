@@ -5,8 +5,8 @@ import '../../dockerfiles/vars.just'
 
 # Build a zig program
 [no-cd, script('bash'), positional-arguments]
-build target release='safe' *args:
+build target release='safe' *args='':
   # target: one of x86_64-linux-musl, aarch64-linux-musl
   # realease: one of safe, fast and small
-  {{ podman_run }} -v `pwd`/zig-out/.cache:/root/.cache {{ zig_image_full }} \
-    zig build --release="{{ release }}" -Dtarget="{{ target }}" "${@:3}"
+  {{ podman_run }} -v "{{ cache_directory() }}:{{ cache_directory() }}" {{ zig_image_full }} \
+    zig build --release="{{ release }}" -Dtarget="{{ target }}" {{ if args != '' { "${@:3}" } else { '' } }}
