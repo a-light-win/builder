@@ -13,3 +13,5 @@ mod builder 'dockerfiles/Justfile'
 mod pack 'mods/nfpm/Justfile'
 # packaging with nfpm
 mod nfpm 'mods/nfpm/Justfile'
+
+mod zig 'mods/zig/Justfile'
