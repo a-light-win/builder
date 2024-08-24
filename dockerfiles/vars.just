@@ -1,8 +1,8 @@
 default_archs := 'x86_64 aarch64'
 
 builder_repository := 'ghcr.io/a-light-win/builder'
-builder_source := 'https://github.com/a-light-win/builder'
-builder_licenses := 'MIT'
+builder_source := 'source=https://github.com/a-light-win/builder'
+builder_licenses := 'licenses=MIT'
 
 debian_version := '12'
 debian_release := ''
