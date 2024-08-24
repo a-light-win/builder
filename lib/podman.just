@@ -1,8 +1,11 @@
-podman_run := 'podman run --rm --env-host -v "' + invocation_directory() + ':' + invocation_directory() + '" -w "' + invocation_directory() + '"'
+podman_run := ('podman run --rm' +
+               ' --env-host' +
+               ' -v "' + invocation_directory() + ':' + invocation_directory() + '"' +
+               ' -w "' + invocation_directory() + '"'
+              )
 
 [private, no-cd, script('bash'), positional-arguments]
 podman_manifest tag *labels:
-  set -x
   podman manifest exists "{{ tag }}"
   if [ $? -eq 0 ]; then
     echo "Manifest {{ tag }} already exists, skipping"
@@ -25,7 +28,7 @@ podman_manifest tag *labels:
     annotations+=("--annotation" "$key=$value")
   done
 
-  echo "Creating manifest {{ tag }} with annotations: ${annotations[@]}"
+  echo "Creating manifest {{ tag }}"
   podman manifest create "${annotations[@]}" "{{ tag }}"
 
 [private, no-cd, script('bash')]
