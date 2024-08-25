@@ -20,7 +20,7 @@ setup() {
 
     assert_line --index 0 "run"
     assert_line --index 1 "--rm"
-    assert_line --index 2 "--env-hosts"
+    assert_line --index 2 "--env-host"
     assert_line --index 3 "-v"
     assert_line --index 4 "$(pwd):$(pwd)"
     assert_line --index 5 "-w"
