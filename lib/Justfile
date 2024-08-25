@@ -1,8 +1,10 @@
 
+# test the bash scripts
 [no-cd]
 test:
   bats --tap "{{ source_dir() }}/bash/tests"
 
+# test and generate the coverage report
 [no-cd]
 cov:
   mkdir -p dist/kcov

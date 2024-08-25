@@ -2,6 +2,7 @@ set unstable := true
 
 # Build images of builders
 mod builder 'dockerfiles'
+# Tasks for this project, e.g. test and coverage
 mod inner 'lib'
 
 # support following environment variables:
