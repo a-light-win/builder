@@ -1,9 +1,11 @@
 set unstable := true
 
 import '../../lib/podman.just'
+import '../../lib/exec_alias.just'
 import '../../dockerfiles/vars.just'
 
 zig_global_cache := cache_directory() / 'zig'
+pkg_target := env('PKG_TARGET', 'zig-out')
 
 # Build a zig program
 [no-cd, script('bash'), positional-arguments]
@@ -12,3 +14,31 @@ build target release='safe' *args='':
   # realease: one of safe, fast and small
   {{ podman_run }} -v "{{ zig_global_cache }}:{{ zig_global_cache }}" {{ zig_image_full }} \
     zig build --release="{{ release }}" -Dtarget="{{ target }}" {{ if args != '' { "${@:3}" } else { '' } }}
+
+[no-cd]
+clean:
+  echo "Cleaning the packages ..."
+  rm -f {{ pkg_target }}/*.deb
+  rm -f {{ pkg_target }}/*.rpm
+  rm -f {{ pkg_target }}/*.tar.zst
+  rm -f {{ pkg_target }}/*.apk
+
+  echo "Cleaning the binaries and libraries ..."
+  rm -rf {{ pkg_target }}/bin/*
+  rm -rf {{ pkg_target }}/lib/*
+
+  echo "Cleaning the zig cache ..."
+  rm -rf {{ zig_global_cache }}/*
+
+[no-cd, script('bash'), positional-arguments]
+upload repo:
+  files=()
+  for suffix in deb rpm tar.zst apk; do
+    while IFS= read -r -d '' file; do
+      files+=("$file")
+      sha256sum "$file" > "$file.sha256"
+      files+=("$file.sha256")
+    done < <(find "{{ pkg_target }}" -name "*.${suffix}" -print0)
+  done
+
+  {{ github }} upload "{{ repo }}" "${files[@]}"
