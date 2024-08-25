@@ -22,13 +22,14 @@ clean:
   rm -f {{ pkg_target }}/*.rpm
   rm -f {{ pkg_target }}/*.tar.zst
   rm -f {{ pkg_target }}/*.apk
+  rm -f {{ pkg_target }}/*.sha256
 
   echo "Cleaning the binaries and libraries ..."
   rm -rf {{ pkg_target }}/bin/*
   rm -rf {{ pkg_target }}/lib/*
 
   echo "Cleaning the zig cache ..."
-  rm -rf {{ zig_global_cache }}/*
+  rm -rf .zig-cache/*
 
 [no-cd, script('bash'), positional-arguments]
 upload repo:
