@@ -1,7 +1,7 @@
 set unstable := true
 set dotenv-load := true
 
-import '../../lib/exec_alias.just'
+import '../../lib/lib.just'
 import '../../lib/podman.just'
 import '../../dockerfiles/vars.just'
 
@@ -16,6 +16,8 @@ target := env('PKG_TARGET', 'dist')
 
 [script('bash')]
 pack: 
+  source "{{ builtin_bash_functions }}"
+
   cd '{{ invocation_directory() }}'
 
   if [ -z {{ version }} ]; then
@@ -28,7 +30,7 @@ pack:
   fi
 
   export PKG_VERSION={{ version }}
-  export PKG_ARCH=$({{ utils }} go-arch {{ arch }})
+  export PKG_ARCH=$(go-arch "{{ arch }}")
   export PKG_PLATFORM={{ platform }}
 
   pids=()

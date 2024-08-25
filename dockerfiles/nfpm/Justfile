@@ -1,6 +1,6 @@
 set unstable := true
 
-import '../../lib/exec_alias.just'
+import '../../lib/lib.just'
 import '../../lib/podman.just'
 import '../vars.just'
 
@@ -17,7 +17,9 @@ build *archs:
 
 [private, script('bash')]
 download-nfpm version arch:
-  arch=$({{ utils }} go-arch {{ arch }})
+  source "{{ builtin_bash_functions }}"
+  arch=$(go-arch "{{ arch }}")
+
   name=nfpm_{{ version }}_${arch}
   curl -L -o ${name}.deb -C - {{ nfpm_download_url }}/v{{ version }}/${name}.deb
 
@@ -25,8 +27,9 @@ download-nfpm version arch:
 build-nfpm arch: \
   (download-nfpm nfpm_version arch) \
   (podman_manifest nfpm_image_full builder_source builder_licenses)
-  set +x
-  arch=$({{ utils }} go-arch {{ arch }})
+  source "{{ builtin_bash_functions }}"
+  arch=$(go-arch "{{ arch }}")
+
   name="nfpm_{{ nfpm_version }}_${arch}"
   podman build --platform linux/{{ arch }} \
     --manifest="{{ nfpm_image_full }}" \

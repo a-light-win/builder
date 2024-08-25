@@ -2,8 +2,8 @@ set unstable := true
 
 self := just_executable() + ' -f ' + source_file()
 
+import '../../lib/lib.just'
 import '../../lib/podman.just'
-import '../../lib/exec_alias.just'
 import '../vars.just'
 
 # build a multi-arch image for zig

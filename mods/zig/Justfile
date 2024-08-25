@@ -1,7 +1,7 @@
 set unstable := true
 
+import '../../lib/lib.just'
 import '../../lib/podman.just'
-import '../../lib/exec_alias.just'
 import '../../dockerfiles/vars.just'
 
 zig_global_cache := cache_directory() / 'zig'
