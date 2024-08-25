@@ -1,4 +1,9 @@
 
+[no-cd]
 test:
+  bats --tap "{{ source_dir() }}/bash/tests"
+
+[no-cd]
+cov:
   mkdir -p dist/kcov
-  kcov --exclude-path=/usr/ dist/kcov bats --tap "{{ source_dir() }}/bash/tests"
+  kcov --exclude-path=/usr/,/tmp dist/kcov bats --tap "{{ source_dir() }}/bash/tests"

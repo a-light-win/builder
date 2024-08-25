@@ -62,3 +62,18 @@ setup() {
   assert_line "Failed to upload $DIR/github.bats to OWNER/REPO"
   assert_line "retry 3 times"
 }
+
+@test "github-upload should send to the correct URL" {
+  export PKG_VERSION="1.0.0"
+  export GITHUB_TOKEN="123456"
+
+  curl() {
+    for arg in "$@"; do
+      echo "$arg"
+    done
+  }
+
+  run github-upload "OWNER/REPO" "$DIR/github.bats"
+  assert_success
+  assert_line "https://uploads.github.com/repos/OWNER/REPO/releases/v1.0.0/assets?name=github.bats"
+}
