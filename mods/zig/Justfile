@@ -1,7 +1,6 @@
 set unstable := true
 
 import '../../lib/lib.just'
-import '../../lib/podman.just'
 import '../../dockerfiles/vars.just'
 
 zig_global_cache := cache_directory() / 'zig'
@@ -10,9 +9,10 @@ pkg_target := env('PKG_TARGET', 'zig-out')
 # Build a zig program
 [no-cd, script('bash'), positional-arguments]
 build target release='safe' *args='':
+  source "{{ builtin_bash_functions }}"
   # target: one of x86_64-linux-musl, aarch64-linux-musl
   # realease: one of safe, fast and small
-  {{ podman_run }} -v "{{ zig_global_cache }}:{{ zig_global_cache }}" {{ zig_image_full }} \
+  podman-run -v "{{ zig_global_cache }}:{{ zig_global_cache }}" {{ zig_image_full }} \
     zig build --release="{{ release }}" -Dtarget="{{ target }}" {{ if args != '' { "${@:3}" } else { '' } }}
 
 [no-cd]

@@ -5,3 +5,4 @@ SCRIPT_DIR="$(dirname "$SCRIPT_PATH")"
 
 source "$SCRIPT_DIR/utils"
 source "$SCRIPT_DIR/github"
+source "$SCRIPT_DIR/podman"

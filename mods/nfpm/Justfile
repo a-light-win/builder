@@ -2,7 +2,6 @@ set unstable := true
 set dotenv-load := true
 
 import '../../lib/lib.just'
-import '../../lib/podman.just'
 import '../../dockerfiles/vars.just'
 
 self := just_executable() + ' -f ' + source_file()
@@ -14,11 +13,9 @@ version := env('PKG_VERSION', '')
 config := env('PKG_CONFIG', 'nfpm.yaml')
 target := env('PKG_TARGET', 'dist')
 
-[script('bash')]
+[no-cd,script('bash')]
 pack: 
   source "{{ builtin_bash_functions }}"
-
-  cd '{{ invocation_directory() }}'
 
   if [ -z {{ version }} ]; then
     echo >&2 "version is required, please provide it with env PKG_VERSION"
@@ -43,7 +40,9 @@ pack:
     wait $pid || exit $?
   done
 
-[private, script('bash')]
+[private, no-cd, script('bash')]
 pack-one packager config target:
-  cd '{{ invocation_directory() }}'
-  {{ podman_run }} {{ nfpm_image_full }} nfpm package --config {{ config }} --packager {{ packager }} --target {{ target }}
+  source "{{ builtin_bash_functions }}"
+
+  podman-run {{ nfpm_image_full }} \
+    nfpm package --config {{ config }} --packager {{ packager }} --target {{ target }}

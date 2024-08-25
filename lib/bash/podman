@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+podman-run() {
+  podman run --rm \
+    --env-hosts \
+    -v $(pwd):$(pwd) \
+    -w $(pwd) \
+    "$@"
+}
