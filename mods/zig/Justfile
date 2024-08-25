@@ -32,6 +32,8 @@ clean:
 
 [no-cd, script('bash'), positional-arguments]
 upload repo:
+  source "{{ builtin_bash_functions }}"
+
   files=()
   for suffix in deb rpm tar.zst apk; do
     while IFS= read -r -d '' file; do
@@ -41,4 +43,4 @@ upload repo:
     done < <(find "{{ pkg_target }}" -name "*.${suffix}" -print0)
   done
 
-  {{ github }} upload "{{ repo }}" "${files[@]}"
+  github-upload "{{ repo }}" "${files[@]}"

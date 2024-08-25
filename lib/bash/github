@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+
+github_upload_retry_times=3
+github_upload_retry_interval=5
+
+# Upload files to the github release page
+github-upload() {
+  local repo="$1"
+  local files="${@:2}"
+
+  if [ -z "$PKG_VERSION" ]; then
+    echo >&2 "PKG_VERSION is required"
+    exit 1
+  fi
+
+  if [ -z "$GITHUB_TOKEN" ]; then
+    echo >&2 "GITHUB_TOKEN is required"
+    exit 1
+  fi
+
+  grep -q '^[^\s/!]\+/[^\s/!]\+$' <<<"${repo}"
+  if [ $? -ne 0 ]; then
+    echo >&2 "repo should be in 'OWNER/REPO' format but got '${repo}'"
+    exit 1
+  fi
+
+  if [ -z "${files[@]}" ]; then
+    echo >&2 "No file to upload"
+    exit 1
+  fi
+
+  for file in "${files[@]}"; do
+    _github-upload-one "${repo}" "${file}" || exit $?
+  done
+}
+
+# Upload one file to github release page
+# The function starts with '_' is private to this file,
+# do not use it directly, use the 'github-upload' instead.
+_github-upload-one() {
+  local repo="$1"
+  local file="$2"
+
+  if [ ! -e "${file}" ]; then
+    echo >&2 "File not found: ${file}"
+    exit 1
+  fi
+
+  echo "Uploading ${file} to ${repo} ..."
+
+  local retries=0
+  while [ "$retries" -lt "$github_upload_retry_times" ]; do
+    _github-upload-one-internal "${repo}" "${file}" && return 0
+    retries="$((retries + 1))"
+    sleep "$github_upload_retry_interval"
+  done
+
+  echo >&2 "Failed to upload ${file} to ${repo}"
+  return 1
+}
+
+_github-upload-one-internal() {
+  local repo="$1"
+  local file="$2"
+
+  curl -L \
+    -X POST \
+    -H "Accept: application/vnd.github+json" \
+    -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+    -H "X-GitHub-Api-Version: 2022-11-28" \
+    -H "Content-Type: application/octet-stream" \
+    "https://uploads.github.com/repos/${repo}/releases/"${PKG_VERSION}"/assets?name=$(basename ${file})" \
+    --data-binary "@${file}"
+}

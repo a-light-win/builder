@@ -1,0 +1,4 @@
+
+test:
+  mkdir -p dist/kcov
+  kcov --exclude-path=/usr/ dist/kcov bats --tap "{{ source_dir() }}/bash/tests"
