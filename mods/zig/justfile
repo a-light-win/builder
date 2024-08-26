@@ -1,26 +1,29 @@
 set unstable := true
 
 import '../../lib/lib.just'
-import '../../dockerfiles/vars.just'
 
-pkg_target := env('PKG_TARGET', 'zig-out')
-
-# Build a zig program
-[no-cd, script('bash'), positional-arguments]
-build target release='safe' *args='':
+# Build a zig program with specified target
+[no-cd, script('bash')]
+build arch:
   source "{{ builtin_bash_functions }}"
-  # target: one of x86_64-linux-musl, aarch64-linux-musl
-  # realease: one of safe, fast and small
-  podman-zig {{ zig_image_full }} build \
-    --release="{{ release }}" \
-    -Dtarget="{{ target }}" {{ if args != '' { "${@:3}" } else { '' } }}
+  zig-build "{{ arch }}"
 
 [no-cd, script('bash')]
 test:
   source "{{ builtin_bash_functions }}"
-  podman-zig {{ zig_image_full }} build test
+  podman-zig build test
 
 [no-cd, script('bash')]
-clean:
+clean: nfpm-clean
   source "{{ builtin_bash_functions }}"
   zig-clean
+
+# build and package on all supported architectures
+# with all supported packaging formats
+[no-cd]
+pack-all: pack-x86_64 pack-aarch64
+
+[no-cd]
+pack-x86_64: (build 'x86_64') (nfpm-pack 'x86_64')
+[no-cd]
+pack-aarch64: (build 'aarch64') (nfpm-pack 'aarch64')

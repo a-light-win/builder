@@ -1,9 +1,44 @@
 #!/usr/bin/env bash
 
-NFPM_OUTPUT_DIR="${PKG_TARGET:=dist}"
+export PKG_PLATFORM="${PKG_PLATFORM:-linux}"
+export PKG_CONFIG="${PKG_CONFIG:-nfpm.yaml}"
+
+export NFPM_TAG="${NFPM_VERSION}${NFPM_VERSION_RELEASE}"
+export NFPM_IMAGE="$BUILDER_REPOSITORY/nfpm"
+export NFPM_IMAGE_FULL="$NFPM_IMAGE:$NFPM_TAG"
+
+nfpm-pre-pack() {
+    if [ -z "$PKG_VERSION" ]; then
+        echo >&2 "version is required, please provide it with env PKG_VERSION"
+        exit 1
+    fi
+
+    local output_dir="${PKG_TARGET:-dist}"
+    if [ ! -e "${output_dir}" ]; then
+        mkdir -p "${output_dir}"
+    fi
+}
+
+nfpm-pack() {
+    local packager="$1"
+    local arch="$2"
+
+    should-skip-arch "$arch" && return 0
+    should-skip-packager "$packager" && return 0
+
+    local output_dir="${PKG_TARGET:-dist}"
+    podman-nfpm package \
+        --config "$PKG_CONFIG" \
+        --packager "${packager}" \
+        --target "${output_dir}"
+}
+
+podman-nfpm() {
+    podman-run "${NFPM_IMAGE_FULL}" nfpm "$@"
+}
 
 nfpm-clean() {
-    local output_dir="${1:-${NFPM_OUTPUT_DIR}}"
+    local output_dir="${1:-${PKG_TARGET:-dist}}"
 
     echo "Cleaning the packages and checksums in ${output_dir} ..."
     rm -f "${output_dir}"/*.deb
@@ -16,7 +51,7 @@ nfpm-clean() {
 # list all packages and their checksums
 # and set into the first argument
 nfpm-pkg-files() {
-    local output_dir="${NFPM_OUTPUT_DIR}"
+    local output_dir="${PKG_TARGET:-dist}"
 
     local -n files__=$1
     files__=()
@@ -30,4 +65,29 @@ nfpm-pkg-files() {
             files__+=("$file.sha256")
         done < <(find "${output_dir}" -name "*.${suffix}" -print0)
     done
+}
+
+should-skip-arch() {
+    local arch="$1"
+    if [ -z "$PKG_ARCHS" ]; then
+        return 1
+    fi
+
+    if ! grep -qw "$arch" <<<"$PKG_ARCHS"; then
+        echo "Skipping arch $arch."
+        return 0
+    fi
+    return 1
+}
+
+should-skip-packager() {
+    local packager="$1"
+    if [ -z "$PKG_PACKAGERS" ]; then
+        return 1
+    fi
+    if ! grep -qw "$packager" <<<"$PKG_PACKAGERS"; then
+        echo "Skipping packager $packager."
+        return 0
+    fi
+    return 1
 }

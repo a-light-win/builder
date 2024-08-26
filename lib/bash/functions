@@ -3,6 +3,7 @@
 SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
 SCRIPT_DIR="$(dirname "$SCRIPT_PATH")"
 
+source "${SCRIPT_DIR}/../versions"
 # All files in this directory will be sourced
 while IFS= read -r -d '' file; do
     source "${SCRIPT_DIR}/${file}"

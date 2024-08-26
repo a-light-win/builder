@@ -1,24 +1,41 @@
 #!/usr/bin/env bash
 
+export ZIG_TAG="${ZIG_VERSION}${ZIG_VERSION_RELEASE}"
+export ZIG_IMAGE="$BUILDER_REPOSITORY/zig"
+export ZIG_IMAGE_FULL="$ZIG_IMAGE:$ZIG_TAG"
+
 ZIG_GLOBAL_CACHE="${ZIG_GLOBAL_CACHE:=${HOME}/.cache/zig}"
-ZIG_OUTPUT_DIR="${PKG_TARGET:=zig-out}"
+# realease: one of safe, fast and small, default to safe
+ZIG_RELEASE="${ZIG_RELEASE:-safe}"
 
 podman-zig() {
-    # TODO:using image from environment but not from the argument
-    local image="$1"
-    shift 1
-    podman-run \
-        -v "${ZIG_GLOBAL_CACHE}:${ZIG_GLOBAL_CACHE}" \
-        "$image" \
+    podman-run -v "${ZIG_GLOBAL_CACHE}:${ZIG_GLOBAL_CACHE}" \
+        "${ZIG_IMAGE_FULL}" \
         zig "$@"
 }
 
-zig-clean() {
-    echo "Cleaning the binaries in ${ZIG_OUTPUT_DIR}/bin ..."
-    rm -rf "${ZIG_OUTPUT_DIR}/bin/"*
+zig-build() {
+    local arch="$1"
 
-    echo "Cleaning the libraries in ${ZIG_OUTPUT_DIR}/lib ..."
-    rm -rf "${ZIG_OUTPUT_DIR}/lib/"*
+    should-skip-arch "$arch" && return 0
+
+    echo "Building project with zig for $arch ..."
+    # target: one of x86_64-linux-musl, aarch64-linux-musl
+    local target="$arch-linux-musl"
+
+    podman-zig build \
+        --release="${ZIG_RELEASE}" \
+        -Dtarget="${target}"
+}
+
+zig-clean() {
+    local output_dir="${PKG_TARGET:-zig-out}"
+
+    echo "Cleaning the binaries in ${output_dir}/bin ..."
+    rm -rf "${output_dir}/bin/"*
+
+    echo "Cleaning the libraries in ${output_dir}/lib ..."
+    rm -rf "${output_dir}/lib/"*
 
     echo "Cleaning the zig cache in .zig-cache ..."
     rm -rf .zig-cache/*

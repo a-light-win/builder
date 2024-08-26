@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+export BUILDER_REPOSITORY=ghcr.io/a-light-win/builder

@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+export ZIG_VERSION=0.13.0
+export ZIG_VERSION_RELEASE=""
