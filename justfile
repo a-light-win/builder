@@ -1,4 +1,5 @@
 set unstable := true
+set dotenv-path := 'builder-env'
 
 # Build images of builders
 mod builder 'dockerfiles'
