@@ -4,7 +4,7 @@ import '../../lib/lib.just'
 
 # Build a zig program with specified target
 [no-cd, script('bash')]
-build arch:
+build arch='x86_64':
   source "{{ builtin_bash_functions }}"
   zig-build "{{ arch }}"
 
@@ -12,6 +12,11 @@ build arch:
 test:
   source "{{ builtin_bash_functions }}"
   podman-zig build test
+
+[no-cd, script('bash')]
+cov:
+  # TODO: implement coverage
+  echo "Coverage is not implemented yet"
 
 [no-cd, script('bash')]
 clean: nfpm-clean
