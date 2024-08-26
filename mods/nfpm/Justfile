@@ -46,3 +46,16 @@ pack-one packager config target:
 
   podman-run {{ nfpm_image_full }} \
     nfpm package --config {{ config }} --packager {{ packager }} --target {{ target }}
+
+[no-cd, script('bash'), positional-arguments]
+upload repo:
+  source "{{ builtin_bash_functions }}"
+  
+  files=()
+  nfpm-pkg-files files
+  github-upload "{{ repo }}" "${files[@]}"
+
+[no-cd, script('bash')]
+clean:
+  source "{{ builtin_bash_functions }}"
+  nfpm-clean

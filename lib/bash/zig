@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+ZIG_GLOBAL_CACHE="${ZIG_GLOBAL_CACHE:=${HOME}/.cache/zig}"
+ZIG_OUTPUT_DIR="${PKG_TARGET:=zig-out}"
+
+podman-zig() {
+    # TODO:using image from environment but not from the argument
+    local image="$1"
+    shift 1
+    podman-run \
+        -v "${ZIG_GLOBAL_CACHE}:${ZIG_GLOBAL_CACHE}" \
+        "$image" \
+        zig "$@"
+}
+
+zig-clean() {
+    echo "Cleaning the binaries in ${ZIG_OUTPUT_DIR}/bin ..."
+    rm -rf "${ZIG_OUTPUT_DIR}/bin/"*
+
+    echo "Cleaning the libraries in ${ZIG_OUTPUT_DIR}/lib ..."
+    rm -rf "${ZIG_OUTPUT_DIR}/lib/"*
+
+    echo "Cleaning the zig cache in .zig-cache ..."
+    rm -rf .zig-cache/*
+}

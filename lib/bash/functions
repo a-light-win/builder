@@ -3,6 +3,7 @@
 SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
 SCRIPT_DIR="$(dirname "$SCRIPT_PATH")"
 
-source "$SCRIPT_DIR/utils"
-source "$SCRIPT_DIR/github"
-source "$SCRIPT_DIR/podman"
+# All files in this directory will be sourced
+while IFS= read -r -d '' file; do
+    source "${SCRIPT_DIR}/${file}"
+done < <(find "${SCRIPT_DIR}" -maxdepth 1 -type f -a ! -name functions -printf "%f\0")

@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+NFPM_OUTPUT_DIR="${PKG_TARGET:=dist}"
+
+nfpm-clean() {
+    local output_dir="${1:-${NFPM_OUTPUT_DIR}}"
+
+    echo "Cleaning the packages and checksums in ${output_dir} ..."
+    rm -f "${output_dir}"/*.deb
+    rm -f "${output_dir}"/*.rpm
+    rm -f "${output_dir}"/*.tar.zst
+    rm -f "${output_dir}"/*.apk
+    rm -f "${output_dir}"/*.sha256
+}
+
+# list all packages and their checksums
+# and set into the first argument
+nfpm-pkg-files() {
+    local output_dir="${NFPM_OUTPUT_DIR}"
+
+    local -n files__=$1
+    files__=()
+
+    local suffix
+    local file
+    for suffix in deb rpm tar.zst apk; do
+        while IFS= read -r -d '' file; do
+            files__+=("$file")
+            sha256sum "$file" >"$file.sha256"
+            files__+=("$file.sha256")
+        done < <(find "${output_dir}" -name "*.${suffix}" -print0)
+    done
+}
