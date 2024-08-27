@@ -1,0 +1,7 @@
+set unstable := true
+
+import '../../lib/lib.just'
+
+setup:
+  source "{{ builtin_bash_functions }}"
+  podman-setup

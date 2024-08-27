@@ -32,3 +32,6 @@ pack-all: pack-x86_64 pack-aarch64
 pack-x86_64: (build 'x86_64') (nfpm-pack 'x86_64')
 [no-cd]
 pack-aarch64: (build 'aarch64') (nfpm-pack 'aarch64')
+
+[no-cd]
+upload repo: (nfpm-upload-packages repo)

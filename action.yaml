@@ -1,0 +1,35 @@
+name: builder
+description: "Builds the projects in a-light-win"
+inputs:
+  action_ref:
+    description: The tag of this repository to use.
+    required: true
+  zig_project:
+    description: |
+      The the relative path to the zig project to build, test or check.
+      If not provided, the zig actions are skipped.
+runs:
+  using: composite
+  steps:
+    - name: Setup just
+      uses: extractions/setup-just@v2
+    - name: Setup global just
+      shell: bash
+      run: |
+        mkdir -p $HOME/.config/
+        ln -snf "$GITHUB_ACTION_PATH" $HOME/.config/just
+      env:
+        GITHUB_ACTION_PATH: ${{ github.action_path }}
+    - name: Setup podman
+      shell: bash
+      run: |
+        just -g podman setup
+
+    - name: Test zig project
+      uses: a-light-win/builder/.github/actions/zig-test@${{ inputs.action_ref }}
+      if: ${{ github.event_name == 'pull_request' && inputs.zig_project != '' }}
+      working-directory: ${{ inputs.zig_project }}
+    - name: Release zig project
+      uses: a-light-win/builder/.github/actions/zig-release@${{ inputs.action_ref }}
+      if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/') && inputs.zig_project != '' }}
+      working-directory: ${{ inputs.zig_project }}

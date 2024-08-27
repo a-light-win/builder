@@ -1,0 +1,15 @@
+name: zig-release
+description: "pack and upload the zig project on tags"
+runs:
+  using: composite
+  steps:
+    - name: packing the zig project
+      run: |
+        just -g zig pack-all
+      shell: bash
+    - name: uploading assets
+      run: |
+        just -g zig upload "${{ github.repository }}"
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ secrets.github_token }}

@@ -8,3 +8,4 @@ mod inner 'lib'
 
 # build with zig
 mod zig 'mods/zig'
+mod podman 'mods/podman'

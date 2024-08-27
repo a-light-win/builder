@@ -1,0 +1,10 @@
+---
+name: zig-test
+description: checks and test the zig project on pull requests
+runs:
+  using: composite
+  steps:
+    - name: Test zig project
+      run: |
+        just -g zig test ${{ inputs.zig_project }}
+      shell: bash
