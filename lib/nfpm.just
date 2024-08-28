@@ -27,4 +27,3 @@ nfpm-upload-packages repo:
   files=()
   nfpm-pkg-files files
   github-upload "{{ repo }}" "${files[@]}"
-

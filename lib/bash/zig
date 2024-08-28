@@ -40,3 +40,22 @@ zig-clean() {
     echo "Cleaning the zig cache in .zig-cache ..."
     rm -rf .zig-cache/*
 }
+
+zig-pre-build-image() {
+    arch="$1"
+    _download-zig "${arch}" || exit $?
+}
+
+_download-zig() {
+    local arch="$1"
+
+    local name="zig-linux-${arch}-${ZIG_VERSION}"
+
+    if [ -e "${name}" ]; then
+        echo "The ${name} already downloaded, skipping"
+        exit 0
+    fi
+
+    curl -L -o "${name}.tar.xz" "https://ziglang.org/download/${ZIG_VERSION}/${name}.tar.xz" || exit 1
+    tar xf "${name}.tar.xz"
+}

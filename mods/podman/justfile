@@ -8,11 +8,12 @@ setup:
   podman-setup
 
 [no-cd, script('bash')]
-build arch='x86_64': create-manifest
+build arch='x86_64': (pre-build-image arch) create-manifest
   source "{{ builtin_bash_functions }}"
+  arch=$(build-arch "{{ arch }}")
   load-builder-env
 
-  podman-build "{{ arch }}"
+  podman-build "${arch}"
 
 [no-cd, script('bash')]
 pack-all: (build 'x86_64') (build 'aarch64')
@@ -32,3 +33,10 @@ create-manifest:
 
   podman-manifest
   
+[no-cd, private, script('bash')]
+pre-build-image arch:
+  source "{{ builtin_bash_functions }}"
+  arch=$(build-arch "{{ arch }}")
+  load-builder-env
+
+  pre-build-image "${arch}"

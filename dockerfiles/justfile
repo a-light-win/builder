@@ -1,6 +1,0 @@
-set unstable := true
-
-# build/clean docker images of zig
-mod zig 'zig/justfile'
-# build/clean docker images of nfpm
-mod nfpm 'nfpm/justfile'

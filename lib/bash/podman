@@ -107,3 +107,32 @@ podman-build() {
         --manifest="${image}" \
         "${build_arg_opts[@]}" .
 }
+
+pre-build-image() {
+    local arch="$1"
+
+    local module fn
+    module=$(basename $(pwd))
+    fn="${module}-pre-build-image"
+
+    if declare -f "${fn}" >/dev/null; then
+        echo "Running $fn for $arch ..."
+        "$fn" "$arch"
+        return 0
+    fi
+
+    echo "No $fn found, skip pre-build-image action ..."
+}
+
+build-arch() {
+    local arch="$1"
+    local module fn
+
+    module=$(basename $(pwd))
+    fn="${module}-build-arch"
+    if declare -f "${fn}" >/dev/null; then
+        "$fn" "$arch"
+        return 0
+    fi
+    echo "$arch"
+}

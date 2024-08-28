@@ -7,6 +7,8 @@ export NFPM_IMAGE="$BUILDER_REPOSITORY/nfpm"
 export NFPM_IMAGE_TAG="${NFPM_VERSION}${NFPM_VERSION_RELEASE}"
 export NFPM_IMAGE_FULL="$NFPM_IMAGE:$NFPM_IMAGE_TAG"
 
+NFPM_DOWNLOAD_URL=https://github.com/goreleaser/nfpm/releases/download
+
 nfpm-pre-pack() {
     if [ -z "$PKG_VERSION" ]; then
         echo >&2 "version is required, please provide it with env PKG_VERSION"
@@ -77,4 +79,19 @@ should-skip-packager() {
         return 0
     fi
     return 1
+}
+
+nfpm-pre-build-image() {
+    local arch="$1"
+    _download-nfpm "$arch" || exit $?
+}
+
+_download-nfpm() {
+    local arch="$1"
+    local name=nfpm_${NFPM_VERSION}_${arch}
+    curl -L -o "${name}.deb" -C - "${NFPM_DOWNLOAD_URL}/v${NFPM_VERSION}/${name}.deb"
+}
+
+nfpm-build-arch() {
+    go-arch "$1"
 }

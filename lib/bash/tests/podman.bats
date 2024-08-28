@@ -29,3 +29,50 @@ setup() {
     assert_line --index 8 "echo"
     assert_line --index 9 "Hello, World!"
 }
+
+@test "pre-build-image will skip if no function is defined" {
+    run pre-build-image "x86_64"
+    assert_success
+    assert_output "No builder-pre-build-image found, skip pre-build-image action ..."
+}
+
+@test "pre-build-image will run the function" {
+    abc-pre-build-image() {
+        echo "executed abc-pre-build-image"
+    }
+
+    work_dir="${DIR}/dist/pre-build-image/abc"
+    mkdir -p "${work_dir}"
+    pushd "${work_dir}" >/dev/null
+
+    run pre-build-image "x86_64"
+    assert_success
+    assert_line --index 0 "Running abc-pre-build-image for x86_64 ..."
+    assert_line --index 1 "executed abc-pre-build-image"
+
+    popd >/dev/null
+    rm -rf "${work_dir}"
+}
+
+@test "build-arch should return asis if no module function is defined" {
+    run build-arch "x86_64"
+    assert_success
+    assert_output "x86_64"
+}
+
+@test "build-arch should run the output of module function" {
+    abc-build-arch() {
+        echo "amd64"
+    }
+
+    work_dir="${DIR}/dist/build-arch/abc"
+    mkdir -p "${work_dir}"
+    pushd "${work_dir}" >/dev/null
+
+    run build-arch "x86_64"
+    assert_success
+    assert_output "amd64"
+
+    popd >/dev/null
+    rm -rf "${work_dir}"
+}
