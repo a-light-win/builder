@@ -1,7 +1,5 @@
 set unstable := true
 
-# build/clean docker images of debian
-mod debian 'debian/justfile'
 # build/clean docker images of zig
 mod zig 'zig/justfile'
 # build/clean docker images of nfpm

@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
 
 export ZIG_VERSION=0.13.0
+# The version_release is the build for the same upstream version.
+# default to "", and for second build, it should be "-1".
 export ZIG_VERSION_RELEASE=""
 
 export NFPM_VERSION=2.39.0
 export NFP_VERSION_RELEASE=""
+
+export DEBIAN_VERSION=12
+export DEBIAN_VERSION_RELEASE=""

@@ -3,9 +3,9 @@
 export PKG_PLATFORM="${PKG_PLATFORM:-linux}"
 export PKG_CONFIG="${PKG_CONFIG:-nfpm.yaml}"
 
-export NFPM_TAG="${NFPM_VERSION}${NFPM_VERSION_RELEASE}"
 export NFPM_IMAGE="$BUILDER_REPOSITORY/nfpm"
-export NFPM_IMAGE_FULL="$NFPM_IMAGE:$NFPM_TAG"
+export NFPM_IMAGE_TAG="${NFPM_VERSION}${NFPM_VERSION_RELEASE}"
+export NFPM_IMAGE_FULL="$NFPM_IMAGE:$NFPM_IMAGE_TAG"
 
 nfpm-pre-pack() {
     if [ -z "$PKG_VERSION" ]; then
@@ -65,19 +65,6 @@ nfpm-pkg-files() {
             files__+=("$file.sha256")
         done < <(find "${output_dir}" -name "*.${suffix}" -print0)
     done
-}
-
-should-skip-arch() {
-    local arch="$1"
-    if [ -z "$PKG_ARCHS" ]; then
-        return 1
-    fi
-
-    if ! grep -qw "$arch" <<<"$PKG_ARCHS"; then
-        echo "Skipping arch $arch."
-        return 0
-    fi
-    return 1
 }
 
 should-skip-packager() {

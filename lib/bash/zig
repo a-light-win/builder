@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-export ZIG_TAG="${ZIG_VERSION}${ZIG_VERSION_RELEASE}"
 export ZIG_IMAGE="$BUILDER_REPOSITORY/zig"
-export ZIG_IMAGE_FULL="$ZIG_IMAGE:$ZIG_TAG"
+export ZIG_IMAGE_TAG="${ZIG_VERSION}${ZIG_VERSION_RELEASE}"
+export ZIG_IMAGE_FULL="$ZIG_IMAGE:$ZIG_IMAGE_TAG"
 
 ZIG_GLOBAL_CACHE="${ZIG_GLOBAL_CACHE:=${HOME}/.cache/zig}"
 # realease: one of safe, fast and small, default to safe

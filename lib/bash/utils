@@ -10,3 +10,36 @@ go-arch() {
   *) echo "$arch" ;;
   esac
 }
+
+should-skip-arch() {
+  local arch="$1"
+  if [ -z "$PKG_ARCHS" ]; then
+    return 1
+  fi
+
+  if ! grep -qw "$arch" <<<"$PKG_ARCHS"; then
+    echo "Skipping arch $arch."
+    return 0
+  fi
+  return 1
+}
+
+load-array-from-env() {
+  local -n array_ref__=$1
+  local env_prefix="$2"
+
+  array_ref__=()
+
+  local value
+  while IFS= read -r value; do
+    array_ref__+=("$value")
+  done < <(env | sort -n | sed -n 's/^'"${env_prefix}"'[^=]\+=\(.*\)$/\1/p')
+}
+
+load-builder-env() {
+  if [ -e builder-env ]; then
+    set -a
+    source builder-env
+    set +a
+  fi
+}

@@ -25,3 +25,51 @@ setup() {
   assert_success
   assert_output "amd64"
 }
+
+@test "should-skip-arch will fail if PKG_ARCHS is not set" {
+  export PKG_ARCHS=""
+  run should-skip-arch "x86_64"
+  assert_failure
+}
+
+@test "should-skip-arch will fail if the arch is in PKG_ARCHS" {
+  export PKG_ARCHS="x86_64"
+  run should-skip-arch "x86_64"
+  assert_failure
+}
+
+@test "should-skip-arch will pass if the arch is not in PKG_ARCHS" {
+  export PKG_ARCHS="x86_64"
+  run should-skip-arch "aarch64"
+  assert_success
+  assert_line "Skipping arch aarch64."
+}
+
+@test "load-array-from-env will load an array from the environment" {
+  export ENV_ARRAY_0="a b"
+  export ENV_ARRAY_1="b=d"
+  export ENV_ARRAY_2="e"
+  env_prefix="ENV_ARRAY_"
+  expected_array=("a b" "b=d" "e")
+
+  load-array-from-env env_array "$env_prefix"
+  assert_equal "${env_array[0]}" "${expected_array[0]}"
+  assert_equal "${env_array[1]}" "${expected_array[1]}"
+  assert_equal "${env_array[2]}" "${expected_array[2]}"
+}
+
+@test "load-builder-env will load variables from builder-env" {
+  work_dir="$DIR/dist/load-builder-env"
+  mkdir -p "$work_dir"
+  pushd "$work_dir" >/dev/null
+
+  echo "PKG_NAME=foo" >builder-env
+  load-builder-env
+  assert_equal "$PKG_NAME" "foo"
+
+  env | grep -q "PKG_NAME=foo"
+  assert [ "$?" -eq 0 ]
+
+  popd >/dev/null
+  rm -rf "$work_dir"
+}

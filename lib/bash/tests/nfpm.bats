@@ -5,7 +5,7 @@ setup() {
     bats_load_library 'bats-assert'
 
     DIR="$(realpath "$(dirname "$BATS_TEST_FILENAME")")"
-    source "$DIR/../nfpm"
+    source "$DIR/../functions"
 }
 
 @test "nfpm-pre-pack will fail if PKG_VERSION is not set" {
@@ -106,25 +106,6 @@ setup() {
     assert [ ! -e "${PKG_TARGET}/a deb pkg.deb.sha256" ]
     assert [ ! -e "${PKG_TARGET}/rpm-pkg.rpm" ]
     assert [ ! -e "${PKG_TARGET}/rpm-pkg.rpm.sha256" ]
-}
-
-@test "should-skip-arch will fail if PKG_ARCHS is not set" {
-    export PKG_ARCHS=""
-    run should-skip-arch "x86_64"
-    assert_failure
-}
-
-@test "should-skip-arch will fail if the arch is in PKG_ARCHS" {
-    export PKG_ARCHS="x86_64"
-    run should-skip-arch "x86_64"
-    assert_failure
-}
-
-@test "should-skip-arch will pass if the arch is not in PKG_ARCHS" {
-    export PKG_ARCHS="x86_64"
-    run should-skip-arch "aarch64"
-    assert_success
-    assert_line "Skipping arch aarch64."
 }
 
 @test "should-skip-packager will fail if PKG_PACKAGERS is not set" {

@@ -27,3 +27,83 @@ podman-setup() {
     cat /etc/os-release >&2
     return 1
 }
+
+podman-manifest() {
+    _validate-podman-manifest-args || exit $?
+
+    local image="${PKG_IMAGE}:${PKG_VERSION}"
+    podman manifest exists "${image}"
+    if [ $? -eq 0 ]; then
+        echo "Manifest ${image} already exists, skipping"
+        exit 0
+    fi
+
+    local labels
+    load-array-from-env labels "PKG_LABEL_"
+    labels+=("created=$(date -u -Is)")
+
+    local annotations=()
+    local label key value
+    for label in "${labels[@]}"; do
+        IFS='=' read -r key value <<<"$label"
+        if [ -z "$key" ] || [ -z "$value" ]; then
+            echo >&2 "Invalid label: $label"
+            exit 1
+        fi
+
+        grep -q "[.]" <<<"$key"
+        if [ $? -ne 0 ]; then
+            key="org.opencontainers.image.$key"
+        fi
+        annotations+=("--annotation" "$key=$value")
+    done
+
+    echo "Creating manifest ${image}"
+    podman manifest create "${annotations[@]}" "${image}"
+}
+
+podman-manifest-clean() {
+    _validate-podman-manifest-args || exit $?
+    local image="${PKG_IMAGE}:${PKG_VERSION}"
+
+    if podman manifest exists "${image}"; then
+        echo "Cleaning manifest ${image}"
+        podman manifest rm "${image}"
+    fi
+}
+
+_validate-podman-manifest-args() {
+    if [ -z "$PKG_IMAGE" ]; then
+        eco >&2 "Error: PKG_IMAGE  is not set"
+        exit 1
+    fi
+    if [ -z "$PKG_VERSION" ]; then
+        echo >&2 "Error: PKG_VERSION is not set"
+        exit 1
+    fi
+}
+
+podman-build() {
+    local arch="$1"
+
+    should-skip-arch "$arch" && return 0
+
+    if [ -z "$PKG_IMAGE" ]; then
+        echo >&2 "Error: PKG_IMAGE is not set"
+        return 1
+    fi
+    local image="${PKG_IMAGE}:${PKG_VERSION}"
+
+    local build_arg build_args
+    load-array-from-env build_args "PKG_BUILD_ARG_"
+    local build_arg_opts=()
+    for build_arg in "${build_args[@]}"; do
+        build_arg_opts+=("--build-arg" "$build_arg")
+    done
+
+    echo "Building ${image} for ${arch} with build args: ${build_args[*]}"
+
+    podman build --platform "linux/${arch}" \
+        --manifest="${image}" \
+        "${build_arg_opts[@]}" .
+}
