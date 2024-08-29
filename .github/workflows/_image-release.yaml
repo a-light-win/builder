@@ -1,0 +1,23 @@
+---
+on:
+  workflow_call:
+    inputs:
+      module:
+        type: string
+        required: true
+      action_ref:
+        type: string
+        required: true
+jobs:
+  build-image:
+    runs-on: ubuntu-24.04
+    if: startsWith(github.ref, 'refs/tags/${{ inputs.module }}-')
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Build ${{ inputs.module }} image
+        uses: a-light-win/builder@${{ inputs.action_ref }}
+        with:
+          action_ref: ${{ inputs.action_ref }}
+          podman_project: ${{ github.workspace }}/dockerfiles/${{ inputs.module }}

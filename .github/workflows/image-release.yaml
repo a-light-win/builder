@@ -1,0 +1,24 @@
+---
+name: Release
+on:
+  push:
+    tags:
+      - "*"
+jobs:
+  build-debian-image:
+    uses: ./.github/workflows/_build-image.yaml@main
+    with:
+      module: debian
+      action_ref: ${{ github.ref_name }}
+
+  build-zig-image:
+    uses: ./.github/workflows/_build-image.yaml@main
+    with:
+      module: zig
+      action_ref: ${{ github.ref_name }}
+
+  build-nfpm-image:
+    uses: ./.github/workflows/_build-image.yaml@main
+    with:
+      module: nfpm
+      action_ref: ${{ github.ref_name }}
