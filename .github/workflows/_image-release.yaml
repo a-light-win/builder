@@ -1,4 +1,5 @@
 ---
+name: Resusable Image Release Workflow
 on:
   workflow_call:
     inputs:
