@@ -6,8 +6,12 @@ inputs:
     required: true
   zig_project:
     description: |
-      The the relative path to the zig project to build, test or check.
+      The the path to the zig project to build, test or check.
       If not provided, the zig actions are skipped.
+  podman_project:
+    description: |
+      The the path to the podman project to build, test or check.
+      If not provided, the podman actions are skipped.
 runs:
   using: composite
   steps:
@@ -35,3 +39,8 @@ runs:
       uses: a-light-win/builder/.github/actions/zig-release@${{ inputs.action_ref }}
       if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/') && inputs.zig_project != '' }}
       working-directory: ${{ inputs.zig_project }}
+
+    - name: build container image
+      uses: a-light-win/builder/.github/actions/podman-release@${{ inputs.action_ref }}
+      if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/') && inputs.podman_project != '' }}
+      working-directory: ${{ inputs.podman_project }}

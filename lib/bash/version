@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+
+version-is-develop() {
+  local version=$1
+  grep -Eqw '(alpha|beta|rc)[0-9]*' <<<"$version"
+}
+
+version-list() {
+  # 1.2.3-4 -> ("1" "1.2" "1.2.3" "1.2.3-4")
+  # abc-1.2.3 -> ("abc-1" "abc-1.2" "abc-1.2.3")
+  # v1.2.3 -> ("v1" "v1.2" "v1.2.3")
+  local -n list_ref__=$1
+  local version="$2"
+
+  local prefix components
+  version-components prefix components "$version"
+
+  list_ref__=()
+  for component in "${components[@]}"; do
+    prefix+="${component}"
+    list_ref__+=("${prefix%[-.]}")
+  done
+}
+
+version-components() {
+  local -n prefix_ref__=$1
+  local -n components_ref__=$2
+  local version="$3"
+
+  # using __ suffix to avoid conflict with the caller's variables
+  # orelse the caller's variables will be shadow and
+  # nameref parameters will not work
+  local prefix__ components__
+  readarray -t components__ < <(grep -oE '(\w+([-.]|$))' <<<"$version")
+  prefix__="${components__[0]}"
+
+  if grep -qE '^v[0-9]+[.-]?$' <<<"$prefix__"; then
+    prefix_ref__=v
+    components_ref__=("${prefix__#v}" "${components__[@]:1}")
+    return 0
+  fi
+  if grep -q '[a-zA-Z]' <<<"${prefix__}"; then
+    prefix_ref__="${prefix__}"
+    components_ref__=("${components__[@]:1}")
+    return 0
+  fi
+  prefix_ref__=""
+  components_ref__=("${components__[@]}")
+}
+
+version-major() {
+  local version=$1
+
+  local prefix components
+  version-components prefix components "$version"
+  if [ ${#components[@]} -eq 0 ]; then
+    echo >&2 "Invalid version: $version"
+    return 1
+  fi
+
+  echo "${components[0]%[-.]}"
+}

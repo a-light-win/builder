@@ -74,7 +74,7 @@ podman-manifest-clean() {
 
 _validate-podman-manifest-args() {
     if [ -z "$PKG_IMAGE" ]; then
-        eco >&2 "Error: PKG_IMAGE  is not set"
+        echo >&2 "Error: PKG_IMAGE is not set"
         exit 1
     fi
     if [ -z "$PKG_VERSION" ]; then
@@ -135,4 +135,22 @@ build-arch() {
         return 0
     fi
     echo "$arch"
+}
+
+podman-tag-and-push() {
+    podman push "${PKG_IMAGE}:${PKG_VERSION}"
+
+    if version-is-develop "$PKG_VERSION"; then
+        return 0
+    fi
+
+    local tag tags
+    version-list tags "$PKG_VERSION"
+    for tag in "${tags[@]}"; do
+        if [ "$tag" = "$PKG_VERSION" ]; then
+            continue
+        fi
+        podman tag "${PKG_IMAGE}:${PKG_VERSION}" "${PKG_IMAGE}:${tag}"
+        podman push "${PKG_IMAGE}:${tag}"
+    done
 }

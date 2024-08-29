@@ -1,0 +1,19 @@
+name: podman-release
+description: "Create container images for"
+runs:
+  using: composite
+  steps:
+    - name: Build container image
+      run: |
+        just -g podman pack-all
+      shell: bash
+    - name: Login to GitHub Container Registry
+      uses: redhat-actions/podman-login@v1
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    - name: Push container image
+      run: |
+        just -g podman upload
+      shell: bash

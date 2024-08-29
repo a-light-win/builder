@@ -40,3 +40,10 @@ pre-build-image arch:
   load-builder-env
 
   pre-build-image "${arch}"
+
+[no-cd, script('bash')]
+upload:
+  source "{{ builtin_bash_functions }}"
+  load-builder-env
+
+  podman-tag-and-push
