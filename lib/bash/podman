@@ -12,7 +12,20 @@ podman-setup() {
     # debian os family
     which apt-get
     if [ $? -eq 0 ]; then
-        sudo apt-get update && sudo apt-get install -y podman
+        echo "Install third-party repository for podman ..."
+        echo 'deb http://download.opensuse.org/repositories/home:/alvistack/xUbuntu_24.04/ /' | sudo tee /etc/apt/sources.list.d/home:alvistack.list >/dev/null || return $?
+        curl -fsSL https://download.opensuse.org/repositories/home:alvistack/xUbuntu_24.04/Release.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/home_alvistack.gpg >/dev/null || return $?
+
+        export DEBIAN_FRONTEND=noninteractive
+
+        echo "Try to remove the golang-github-containers-common ..."
+        sudo apt-get remove -y golang-github-containers-common || reuturn $?
+        sudo apt-get autoremove -y
+        sudo apt-get autoclean -y
+
+        echo "Install the third-party podman ..."
+        sudo apt-get update || return $?
+        sudo apt-get install -y podman uidmap netavark passt slirp4netns
         return $?
     fi
 

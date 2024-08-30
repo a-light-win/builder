@@ -34,6 +34,9 @@ setup() {
     sudo() {
         "$@"
     }
+    curl() { return 0; }
+    gpg() { return 0; }
+    tee() { return 0; }
     which() {
         if [ "$1" == "apt-get" ]; then
             return 0
@@ -45,15 +48,31 @@ setup() {
             echo "$arg"
         done
     }
+    rm() { for arg in "$@"; do echo "$arg"; done; }
 
     run podman-setup
     assert_success
 
-    assert_line --index 0 "update"
+    assert_line --index 0 "Install third-party repository for podman ..."
 
-    assert_line --index 1 "install"
-    assert_line --index 2 "-y"
-    assert_line --index 3 "podman"
+    assert_line --index 1 "Try to remove the golang-github-containers-common ..."
+
+    assert_line --index 2 "remove"
+    assert_line --index 3 "-y"
+    assert_line --index 4 "golang-github-containers-common"
+
+    assert_line --index 5 "autoremove"
+    assert_line --index 6 "-y"
+
+    assert_line --index 7 "autoclean"
+    assert_line --index 8 "-y"
+
+    assert_line --index 9 "Install the third-party podman ..."
+    assert_line --index 10 "update"
+
+    assert_line --index 11 "install"
+    assert_line --index 12 "-y"
+    assert_line --index 13 "podman"
 }
 
 @test "podman-setup should install podman on archlinux" {
