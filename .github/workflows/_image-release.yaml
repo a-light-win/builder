@@ -6,9 +6,6 @@ on:
       module:
         type: string
         required: true
-    secrets:
-      GITHUB_TOKEN:
-        required: true
 jobs:
   build-image:
     runs-on: ubuntu-24.04
