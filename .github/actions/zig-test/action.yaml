@@ -10,6 +10,6 @@ runs:
   steps:
     - name: Test zig project
       run: |
-        just -g zig test ${{ inputs.zig_project }}
+        just -g zig test
       shell: bash
-      working-directory: ${{ inputs.zig_project }}
+      working-directory: ${{ inputs.working_directory }}
