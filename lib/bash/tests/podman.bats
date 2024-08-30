@@ -30,6 +30,63 @@ setup() {
     assert_line --index 9 "Hello, World!"
 }
 
+@test "podman-setup should install podman on debian" {
+    sudo() {
+        "$@"
+    }
+    which() {
+        if [ "$1" == "apt-get" ]; then
+            return 0
+        fi
+        return 1
+    }
+    apt-get() {
+        for arg in "$@"; do
+            echo "$arg"
+        done
+    }
+
+    run podman-setup
+    assert_success
+
+    assert_line --index 0 "update"
+
+    assert_line --index 1 "install"
+    assert_line --index 2 "-y"
+    assert_line --index 3 "podman"
+}
+
+@test "podman-setup should install podman on archlinux" {
+    sudo() {
+        "$@"
+    }
+    which() {
+        if [ "$1" == "pacman" ]; then
+            return 0
+        fi
+        return 1
+    }
+    pacman() {
+        for arg in "$@"; do
+            echo "$arg"
+        done
+    }
+    run podman-setup
+    assert_success
+    assert_line --index 0 "-Sy"
+    assert_line --index 1 "podman"
+}
+
+@test "podman-setup should failed if os is not supported" {
+    which() {
+        return 1
+    }
+
+    run podman-setup
+    assert_failure
+    assert_line --index 0 "Error: unsupported os family"
+}
+
 @test "podman-manifest-clean should clean the manifest" {
     export PKG_IMAGE="ghcr.io/a-light-win/builder/podman-manifest-clean"
     export PKG_VERSION="1"

@@ -11,14 +11,14 @@ podman-run() {
 podman-setup() {
     # debian os family
     which apt-get
-    if [ $$? -eq 0 ]; then
+    if [ $? -eq 0 ]; then
         sudo apt-get update && sudo apt-get install -y podman
         return $?
     fi
 
     # archlinux
     which pacman
-    if [ $$? -eq 0 ]; then
+    if [ $? -eq 0 ]; then
         sudo pacman -Sy podman
         return $?
     fi
