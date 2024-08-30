@@ -9,16 +9,13 @@ jobs:
     uses: ./.github/workflows/_image-release.yaml
     with:
       module: debian
-      action_ref: ${{ github.ref_name }}
 
   build-zig-image:
     uses: ./.github/workflows/_image-release.yaml
     with:
       module: zig
-      action_ref: ${{ github.ref_name }}
 
   build-nfpm-image:
     uses: ./.github/workflows/_image-release.yaml
     with:
       module: nfpm
-      action_ref: ${{ github.ref_name }}

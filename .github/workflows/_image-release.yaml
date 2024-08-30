@@ -6,9 +6,6 @@ on:
       module:
         type: string
         required: true
-      action_ref:
-        type: string
-        required: true
 jobs:
   build-image:
     runs-on: ubuntu-24.04
@@ -18,7 +15,7 @@ jobs:
       packages: write
     steps:
       - name: Build ${{ inputs.module }} image
-        uses: a-light-win/builder@${{ inputs.action_ref }}
+        uses: a-light-win/builder@main
         with:
-          action_ref: ${{ inputs.action_ref }}
+          action_ref: ${{ github.ref_name }}
           podman_project: ${{ github.workspace }}/dockerfiles/${{ inputs.module }}
