@@ -16,6 +16,4 @@ runs:
       run: |
         just -g zig upload "${{ github.repository }}"
       shell: bash
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       working-directory: ${{ inputs.working_directory }}
