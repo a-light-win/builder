@@ -1,5 +1,9 @@
 name: podman-release
 description: "Create container images for"
+inputs:
+  working_directory:
+    description: The root path of the docker file directory
+    required: true
 runs:
   using: composite
   steps:
@@ -7,6 +11,7 @@ runs:
       run: |
         just -g podman pack-all
       shell: bash
+      working-directory: ${{ inputs.working_directory }}
     - name: Login to GitHub Container Registry
       uses: redhat-actions/podman-login@v1
       with:
@@ -17,3 +22,4 @@ runs:
       run: |
         just -g podman upload
       shell: bash
+      working-directory: ${{ inputs.working_directory }}

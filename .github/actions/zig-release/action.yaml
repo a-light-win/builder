@@ -1,5 +1,9 @@
 name: zig-release
 description: "pack and upload the zig project on tags"
+inputs:
+  working_directory:
+    description: The root path of the zig project
+    required: true
 runs:
   using: composite
   steps:
@@ -7,9 +11,11 @@ runs:
       run: |
         just -g zig pack-all
       shell: bash
+      working-directory: ${{ inputs.working_directory }}
     - name: uploading assets
       run: |
         just -g zig upload "${{ github.repository }}"
       shell: bash
       env:
         GITHUB_TOKEN: ${{ secrets.github_token }}
+      working-directory: ${{ inputs.working_directory }}
