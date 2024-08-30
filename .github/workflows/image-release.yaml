@@ -14,13 +14,16 @@ jobs:
     uses: ./.github/workflows/_image-release.yaml
     with:
       module: debian
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-zig-image:
     uses: ./.github/workflows/_image-release.yaml
     with:
       module: zig
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-nfpm-image:
     uses: ./.github/workflows/_image-release.yaml
     with:
       module: nfpm
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

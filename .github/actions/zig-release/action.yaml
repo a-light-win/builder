@@ -4,6 +4,9 @@ inputs:
   working_directory:
     description: The root path of the zig project
     required: true
+  GITHUB_TOKEN:
+    description: "The Github token"
+    required: true
 runs:
   using: composite
   steps:
@@ -17,3 +20,5 @@ runs:
         just -g zig upload "${{ github.repository }}"
       shell: bash
       working-directory: ${{ inputs.working_directory }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.GITHUB_TOKEN }}

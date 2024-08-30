@@ -4,6 +4,9 @@ inputs:
   working_directory:
     description: The root path of the docker file directory
     required: true
+  GITHUB_TOKEN:
+    description: "The GitHub token to use for pushing to the GitHub Container Registry"
+    required: true
 runs:
   using: composite
   steps:
@@ -17,7 +20,7 @@ runs:
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
-        password: ${GITHUB_TOKEN}
+        password: ${{ inputs.GITHUB_TOKEN }}
     - name: Push container image
       run: |
         just -g podman upload
