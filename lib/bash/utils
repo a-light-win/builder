@@ -43,3 +43,12 @@ load-builder-env() {
     set +a
   fi
 }
+
+setup-qemu-user-static() {
+  which apt-get
+  if [ $? -eq 0 ]; then
+    export DEBIAN_FRONTEND=noninteractive
+    sudo apt-get install -y qemu-user-static
+    sudo systemctl start systemd-binfmt
+  fi
+}

@@ -6,6 +6,7 @@ import '../../lib/lib.just'
 setup:
   source "{{ builtin_bash_functions }}"
   podman-setup
+  setup-qemu-user-static
 
 [no-cd, script('bash')]
 build arch='x86_64': (pre-build-image arch) create-manifest
