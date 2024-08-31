@@ -151,6 +151,8 @@ build-arch() {
 }
 
 podman-tag-and-push() {
+    podman manifest inspect "${PKG_IMAGE}:${PKG_VERSION}"
+
     podman manifest push "${PKG_IMAGE}:${PKG_VERSION}"
 
     if version-is-develop "$PKG_VERSION"; then

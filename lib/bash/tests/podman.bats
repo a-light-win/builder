@@ -250,26 +250,30 @@ setup() {
     run podman-tag-and-push
     assert_success
 
-    # first push
     assert_line --index 0 "manifest"
-    assert_line --index 1 "push"
+    assert_line --index 1 "inspect"
     assert_line --index 2 "ghcr.io/a-light-win/builder/debian:12.6-4"
 
+    # first push
+    assert_line --index 3 "manifest"
+    assert_line --index 4 "push"
+    assert_line --index 5 "ghcr.io/a-light-win/builder/debian:12.6-4"
+
     # tag and push major version
-    assert_line --index 3 "tag"
-    assert_line --index 4 "ghcr.io/a-light-win/builder/debian:12.6-4"
-    assert_line --index 5 "ghcr.io/a-light-win/builder/debian:12"
-    assert_line --index 6 "manifest"
-    assert_line --index 7 "push"
+    assert_line --index 6 "tag"
+    assert_line --index 7 "ghcr.io/a-light-win/builder/debian:12.6-4"
     assert_line --index 8 "ghcr.io/a-light-win/builder/debian:12"
+    assert_line --index 9 "manifest"
+    assert_line --index 10 "push"
+    assert_line --index 11 "ghcr.io/a-light-win/builder/debian:12"
 
     # tag and push minor version
-    assert_line --index 9 "tag"
-    assert_line --index 10 "ghcr.io/a-light-win/builder/debian:12.6-4"
-    assert_line --index 11 "ghcr.io/a-light-win/builder/debian:12.6"
-    assert_line --index 12 "manifest"
-    assert_line --index 13 "push"
+    assert_line --index 12 "tag"
+    assert_line --index 13 "ghcr.io/a-light-win/builder/debian:12.6-4"
     assert_line --index 14 "ghcr.io/a-light-win/builder/debian:12.6"
+    assert_line --index 15 "manifest"
+    assert_line --index 16 "push"
+    assert_line --index 17 "ghcr.io/a-light-win/builder/debian:12.6"
 }
 
 @test "podman-tag-and-push should push the image for develop version" {
@@ -282,7 +286,12 @@ setup() {
     export PKG_VERSION="12.6-rc.1"
     run podman-tag-and-push
     assert_success
+
     assert_line --index 0 "manifest"
-    assert_line --index 1 "push"
+    assert_line --index 1 "inspect"
     assert_line --index 2 "ghcr.io/a-light-win/builder/debian:12.6-rc.1"
+
+    assert_line --index 3 "manifest"
+    assert_line --index 4 "push"
+    assert_line --index 5 "ghcr.io/a-light-win/builder/debian:12.6-rc.1"
 }
