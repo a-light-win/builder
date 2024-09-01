@@ -25,7 +25,11 @@ runs:
         ln -snf "$GITHUB_ACTION_PATH" $HOME/.config/just
       env:
         GITHUB_ACTION_PATH: ${{ github.action_path }}
+
     - name: Setup podman
+      # We only need to install the latest podman when building the container image
+      # For other actions, we can use the official podman that already installed
+      if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/') && inputs.podman_project != '' }}
       shell: bash
       run: |
         just -g podman setup
