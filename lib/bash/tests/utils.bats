@@ -73,3 +73,39 @@ setup() {
   popd >/dev/null
   rm -rf "$work_dir"
 }
+
+@test "setup-qemu-user-static will install qemu-user-static if apt-get exists" {
+  which() {
+    if [ "$1" == "apt-get" ]; then
+      return 0
+    fi
+    return 1
+  }
+  sudo() {
+    "$@"
+  }
+  apt-get() {
+    echo "apt-get"
+    for arg in "$@"; do
+      echo "$arg"
+    done
+  }
+  systemctl() {
+    echo "systemctl"
+    for arg in "$@"; do
+      echo "$arg"
+    done
+  }
+  export -f apt-get
+  run setup-qemu-user-static
+
+  assert_success
+  assert_line --index 0 "apt-get"
+  assert_line --index 1 "install"
+  assert_line --index 2 "-y"
+  assert_line --index 3 "qemu-user-static"
+
+  assert_line --index 4 "systemctl"
+  assert_line --index 5 "start"
+  assert_line --index 6 "systemd-binfmt"
+}

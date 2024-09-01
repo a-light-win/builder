@@ -45,10 +45,22 @@ load-builder-env() {
 }
 
 setup-qemu-user-static() {
-  which apt-get
+  which apt-get &>/dev/null
   if [ $? -eq 0 ]; then
     export DEBIAN_FRONTEND=noninteractive
     sudo apt-get install -y qemu-user-static
     sudo systemctl start systemd-binfmt
   fi
+}
+
+make-nargs() {
+  local -n nargs_ref__=$1
+  local option__="$2"
+  local values__=("${@:3}")
+
+  nargs_ref__=()
+  local arg__
+  for arg__ in "${values__[@]}"; do
+    nargs_ref__+=("$option__" "$arg__")
+  done
 }

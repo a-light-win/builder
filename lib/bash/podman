@@ -41,21 +41,14 @@ podman-setup() {
     return 1
 }
 
-podman-manifest() {
-    _validate-podman-manifest-args || exit $?
-
-    local image="${PKG_IMAGE}:${PKG_VERSION}"
-    podman manifest exists "${image}"
-    if [ $? -eq 0 ]; then
-        echo "Manifest ${image} already exists, skipping"
-        exit 0
-    fi
+podman-parse-annotations() {
+    local -n annotations_ref__="$1"
 
     local labels
     load-array-from-env labels "PKG_LABEL_"
     labels+=("created=$(date -u -Is)")
 
-    local annotations=()
+    annotations_ref__=()
     local label key value
     for label in "${labels[@]}"; do
         IFS='=' read -r key value <<<"$label"
@@ -68,11 +61,26 @@ podman-manifest() {
         if [ $? -ne 0 ]; then
             key="org.opencontainers.image.$key"
         fi
-        annotations+=("--annotation" "$key=$value")
+        annotations_ref__+=("$key=$value")
     done
+}
+
+podman-manifest() {
+    _validate-podman-manifest-args || exit $?
+
+    local image="${PKG_IMAGE}:${PKG_VERSION}"
+    podman manifest exists "${image}"
+    if [ $? -eq 0 ]; then
+        echo "Manifest ${image} already exists, skipping"
+        exit 0
+    fi
+
+    local annotations annotation_opts
+    podman-parse-annotations annotations
+    make-nargs annotation_opts "--annotation" "${annotations[@]}"
 
     echo "Creating manifest ${image}"
-    podman manifest create "${annotations[@]}" "${image}"
+    podman manifest create "${annotation_opts[@]}" "${image}"
 }
 
 podman-manifest-clean() {
@@ -107,17 +115,19 @@ podman-build() {
     fi
     local image="${PKG_IMAGE}:${PKG_VERSION}"
 
-    local build_arg build_args
+    local build_args build_arg_opts
     load-array-from-env build_args "PKG_BUILD_ARG_"
-    local build_arg_opts=()
-    for build_arg in "${build_args[@]}"; do
-        build_arg_opts+=("--build-arg" "$build_arg")
-    done
+    make-nargs build_arg_opts "--build-arg" "${build_args[@]}"
+
+    local annotations annotation_opts
+    podman-parse-annotations annotations
+    make-nargs annotation_opts "--annotation" "${annotations[@]}"
 
     echo "Building ${image} for ${arch} with build args: ${build_args[*]}"
 
     podman build --platform "linux/${arch}" \
         --manifest="${image}" \
+        "${annotation_opts[@]}" \
         "${build_arg_opts[@]}" .
 }
 

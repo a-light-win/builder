@@ -106,6 +106,56 @@ setup() {
     assert_line --index 0 "Error: unsupported os family"
 }
 
+@test "podman-manifest should return immediately if the manifest exists" {
+    podman() {
+        if [ "$1" == "manifest" ] && [ "$2" == "exists" ]; then
+            return 0
+        fi
+        echo "podman"
+        local arg
+        for arg in "$@"; do
+            echo "$arg"
+        done
+    }
+    export PKG_IMAGE="ghcr.io/a-light-win/builder/debian"
+    export PKG_VERSION="12.6-4"
+    run podman-manifest
+    assert_success
+    assert_output "Manifest ghcr.io/a-light-win/builder/debian:12.6-4 already exists, skipping"
+}
+
+@test "podman-manifest should create the manifest" {
+    podman() {
+        if [ "$1" == "manifest" ] && [ "$2" == "exists" ]; then
+            return 1
+        fi
+        echo "podman"
+        local arg
+        for arg in "$@"; do
+            echo "$arg"
+        done
+    }
+    export PKG_IMAGE="ghcr.io/a-light-win/builder/debian"
+    export PKG_VERSION="12.6-4"
+    run podman-manifest
+    assert_success
+
+    assert_line --index 0 "Creating manifest ghcr.io/a-light-win/builder/debian:12.6-4"
+    assert_line --index 1 "podman"
+    assert_line --index 2 "manifest"
+    assert_line --index 3 "create"
+    assert_line --index 4 "--annotation"
+    assert_line --index 5 --partial "org.opencontainers.image.created="
+    assert_line --index 6 "ghcr.io/a-light-win/builder/debian:12.6-4"
+}
+
+@test "podman-parse-annocations should failed if the label is invalid" {
+    export PKG_LABEL_1="invalid-key-value-paire"
+    run podman-parse-annotations annotations
+    assert_failure
+    assert_output "Invalid label: invalid-key-value-paire"
+}
+
 @test "podman-manifest-clean should clean the manifest" {
     export PKG_IMAGE="ghcr.io/a-light-win/builder/podman-manifest-clean"
     export PKG_VERSION="1"
@@ -167,7 +217,9 @@ setup() {
     assert_line --index 2 "--platform"
     assert_line --index 3 "linux/x86_64"
     assert_line --index 4 "--manifest=ghcr.io/a-light-win/builder/debian:12.6-4"
-    assert_line --index 5 "."
+    assert_line --index 5 "--annotation"
+    assert_line --index 6 --partial "org.opencontainers.image.created="
+    assert_line --index 7 "."
 }
 
 @test "podman-build should build an image with build args" {
@@ -187,9 +239,11 @@ setup() {
     assert_line --index 2 "--platform"
     assert_line --index 3 "linux/x86_64"
     assert_line --index 4 "--manifest=ghcr.io/a-light-win/builder/debian:12.6-4"
-    assert_line --index 5 "--build-arg"
-    assert_line --index 6 "HTTP_PROXY=http://proxy.example.com:80"
-    assert_line --index 7 "."
+    assert_line --index 5 "--annotation"
+    assert_line --index 6 --partial "org.opencontainers.image.created="
+    assert_line --index 7 "--build-arg"
+    assert_line --index 8 "HTTP_PROXY=http://proxy.example.com:80"
+    assert_line --index 9 "."
 }
 
 @test "pre-build-image will skip if no function is defined" {

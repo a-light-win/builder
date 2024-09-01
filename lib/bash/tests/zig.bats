@@ -60,3 +60,62 @@ setup() {
   assert_line "rm -rf zig-out/lib/*"
   assert_line "rm -rf .zig-cache/*"
 }
+
+@test "zig-pre-build-image should download the zig binary" {
+  curl() {
+    echo "curl"
+    local arg
+    for arg in "$@"; do
+      echo "$arg"
+    done
+  }
+  tar() {
+    echo "tar"
+    local arg
+    for arg in "$@"; do
+      echo "$arg"
+    done
+  }
+  export ZIG_VERSION=0.13.0
+  [ -e zig-linux-x86_64-${ZIG_VERSION} ] && rmdir zig-linux-x86_64-${ZIG_VERSION}
+
+  run zig-pre-build-image x86_64
+  assert_success
+  assert_line --index 0 "curl"
+  assert_line --index 1 "-L"
+  assert_line --index 2 "-o"
+  assert_line --index 3 "zig-linux-x86_64-${ZIG_VERSION}.tar.xz"
+  assert_line --index 4 "https://ziglang.org/download/${ZIG_VERSION}/zig-linux-x86_64-${ZIG_VERSION}.tar.xz"
+
+  assert_line --index 5 "tar"
+  assert_line --index 6 "xf"
+  assert_line --index 7 "zig-linux-x86_64-${ZIG_VERSION}.tar.xz"
+}
+
+@test "zig-pre-build-image should not download the zig binary if it exists" {
+  curl() {
+    echo "curl"
+    local arg
+    for arg in "$@"; do
+      echo "$arg"
+    done
+  }
+  tar() {
+    echo "tar"
+    local arg
+    for arg in "$@"; do
+      echo "$arg"
+    done
+  }
+
+  export ZIG_VERSION=0.13.0
+  mkdir -p zig-linux-x86_64-${ZIG_VERSION}
+
+  run zig-pre-build-image x86_64
+  assert_success
+  assert_line --index 0 "The zig-linux-x86_64-${ZIG_VERSION} already downloaded, skipping"
+  refute_line "curl"
+  refute_line "tar"
+
+  rmdir zig-linux-x86_64-${ZIG_VERSION}
+}

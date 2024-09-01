@@ -126,3 +126,30 @@ setup() {
     assert_success
     assert_line "Skipping packager rpm."
 }
+
+@test "nfpm-pre-build-image" {
+    curl() {
+        echo "curl"
+        local arg
+        for arg in "$@"; do
+            echo "$arg"
+        done
+    }
+
+    export NFPM_VERSION=2.39.0
+    run nfpm-pre-build-image "amd64"
+    assert_success
+    assert_line --index 0 "curl"
+    assert_line --index 1 "-L"
+    assert_line --index 2 "-o"
+    assert_line --index 3 "nfpm_2.39.0_amd64.deb"
+    assert_line --index 4 "-C"
+    assert_line --index 5 "-"
+    assert_line --index 6 "https://github.com/goreleaser/nfpm/releases/download/v2.39.0/nfpm_2.39.0_amd64.deb"
+}
+
+@test nfpm-build-arch {
+    run nfpm-build-arch "x86_64"
+    assert_success
+    assert_output "amd64"
+}

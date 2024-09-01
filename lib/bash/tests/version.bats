@@ -91,3 +91,9 @@ setup() {
   assert_success
   assert_output "1"
 }
+
+@test "version-major should return error for invalid version" {
+  run version-major "v"
+  assert_failure
+  assert_output "Invalid version: v"
+}
