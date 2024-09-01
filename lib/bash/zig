@@ -9,6 +9,7 @@ ZIG_GLOBAL_CACHE="${ZIG_GLOBAL_CACHE:=${HOME}/.cache/zig}"
 ZIG_RELEASE="${ZIG_RELEASE:-safe}"
 
 podman-zig() {
+    mkdir -p "${ZIG_GLOBAL_CACHE}"
     podman-run -v "${ZIG_GLOBAL_CACHE}:${ZIG_GLOBAL_CACHE}" \
         "${ZIG_IMAGE_FULL}" \
         zig "$@"
