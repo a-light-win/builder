@@ -1,3 +1,6 @@
+set unstable := true
+
+import '../../lib/lib.just'
 
 [no-cd, script('bash')]
 release repo:
