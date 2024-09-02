@@ -73,7 +73,8 @@ setup() {
     done
   }
 
-  run github-upload "OWNER/REPO" "$DIR/github.bats"
+  run github-upload "OWNER/REPO" "$DIR/github.bats" "$DIR/utils.bats"
   assert_success
   assert_line "https://uploads.github.com/repos/OWNER/REPO/releases/v1.0.0/assets?name=github.bats"
+  assert_line "https://uploads.github.com/repos/OWNER/REPO/releases/v1.0.0/assets?name=utils.bats"
 }

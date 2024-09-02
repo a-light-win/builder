@@ -6,7 +6,7 @@ github_upload_retry_interval=5
 # Upload files to the github release page
 github-upload() {
   local repo="$1"
-  local files="${@:2}"
+  local files=("${@:2}")
 
   if [ -z "$PKG_VERSION" ]; then
     echo >&2 "PKG_VERSION is required"
