@@ -19,12 +19,3 @@ nfpm-clean:
 nfpm-pack-one packager arch:
   source "{{ builtin_bash_functions }}"
   nfpm-pack "{{ packager }}" "{{ arch }}"
-
-# Uploda the packages to the github release
-[private, no-cd, script('bash')]
-nfpm-upload-packages repo:
-  source "{{ builtin_bash_functions }}"
-
-  github-release assets_url "{{ repo }}" || exit 1
-  nfpm-pkg-files files || exit 1
-  github-upload "${assets_url}" "${files[@]}"

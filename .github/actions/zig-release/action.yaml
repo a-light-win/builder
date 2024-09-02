@@ -10,14 +10,14 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Packing the zig project
+    - name: Build and Pack
       run: |
         just -g zig pack-all
       shell: bash
       working-directory: ${{ inputs.working_directory }}
-    - name: Uploading assets
+    - name: Release
       run: |
-        just -g zig upload "${{ github.repository }}"
+        just -g github release "${{ github.repository }}"
       shell: bash
       working-directory: ${{ inputs.working_directory }}
       env:
