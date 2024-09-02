@@ -69,6 +69,6 @@ _github-upload-one-internal() {
     -H "Authorization: Bearer ${GITHUB_TOKEN}" \
     -H "X-GitHub-Api-Version: 2022-11-28" \
     -H "Content-Type: application/octet-stream" \
-    "https://uploads.github.com/repos/${repo}/releases/v"${PKG_VERSION}"/assets?name=$(basename ${file})" \
+    "https://uploads.github.com/repos/${repo}/releases/"${PKG_VERSION}"/assets?name=$(basename ${file})" \
     --data-binary "@${file}"
 }
