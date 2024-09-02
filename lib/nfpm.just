@@ -24,6 +24,7 @@ nfpm-pack-one packager arch:
 [private, no-cd, script('bash')]
 nfpm-upload-packages repo:
   source "{{ builtin_bash_functions }}"
-  files=()
-  nfpm-pkg-files files
-  github-upload "{{ repo }}" "${files[@]}"
+
+  github-release assets_url "{{ repo }}" || exit 1
+  nfpm-pkg-files files || exit 1
+  github-upload "${assets_url}" "${files[@]}"
