@@ -1,5 +1,5 @@
 
-[no-cd]
+[no-cd, script('bash')]
 release repo:
   source "{{ builtin_bash_functions }}"
 
