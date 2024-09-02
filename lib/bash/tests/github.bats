@@ -59,7 +59,7 @@ setup() {
 
   run github-upload "OWNER/REPO" "$DIR/github.bats"
   assert_failure
-  assert_line "Failed to upload $DIR/github.bats to OWNER/REPO"
+  assert_line "Failed to upload $DIR/github.bats to https://uploads.github.com/repos/OWNER/REPO/releases/1.0.0/assets?name=github.bats"
   assert_line "retry 3 times"
 }
 
@@ -75,6 +75,6 @@ setup() {
 
   run github-upload "OWNER/REPO" "$DIR/github.bats" "$DIR/utils.bats"
   assert_success
-  assert_line "https://uploads.github.com/repos/OWNER/REPO/releases/1.0.0/assets?name=github.bats"
-  assert_line "https://uploads.github.com/repos/OWNER/REPO/releases/1.0.0/assets?name=utils.bats"
+  assert_line "Uploading $DIR/github.bats to https://uploads.github.com/repos/OWNER/REPO/releases/1.0.0/assets?name=github.bats ..."
+  assert_line "Uploading $DIR/utils.bats to https://uploads.github.com/repos/OWNER/REPO/releases/1.0.0/assets?name=utils.bats ..."
 }
