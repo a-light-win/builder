@@ -171,7 +171,11 @@ podman-tag-and-push() {
 
     local tag tags
     version-list tags "$PKG_VERSION"
-    for tag in "${tags[@]}"; do
+    # Only tag the major and minor versions here.
+    # The patch version should not be overridden by the release version.
+    # 1.2.3 -> 1 1.2
+    # 1.2.3-1 -> 1 1.2 # do not tag 1.2.3 here so that we can always gets the original 1.2.3
+    for tag in "${tags[@]:0:2}"; do
         if [ "$tag" = "$PKG_VERSION" ]; then
             continue
         fi
