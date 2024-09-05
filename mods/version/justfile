@@ -3,7 +3,7 @@ set unstable := true
 import '../../lib/lib.just'
 
 [no-cd, script('bash')]
-bump version module='': is-clean && (commit version module)
+bump version module='': is-clean && (commit version module) (tag version module)
   source "{{ builtin_bash_functions }}"
   version-bump "{{ version }}" "{{ module }}"
 
@@ -14,5 +14,11 @@ is-clean:
 
 [private, no-cd, script('bash')]
 commit version module='':
+  module={{ if module == '' {''} else { module + ' ' } }}
   git add -u
-  git commit -m "Bump {{ if module == '' {''} else { module + ' ' } }}version to {{ version }}"
+  git commit -m "Bump ${module}version to {{ version }}"
+
+[private, no-cd, script('bash')]
+tag version module='':
+  version={{ if module == '' { version } else { module + '-' + version } }}
+  git tag "${version}" -m "Bump ${version}"
