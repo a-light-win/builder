@@ -28,6 +28,7 @@ nfpm-pack() {
     should-skip-arch "$arch" && return 0
     should-skip-packager "$packager" && return 0
 
+    export PKG_ARCH=$(nfpm-build-arch "$arch")
     local output_dir="${PKG_TARGET:-dist}"
     podman-nfpm package \
         --config "$PKG_CONFIG" \
