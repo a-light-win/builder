@@ -60,3 +60,19 @@ version-major() {
 
   echo "${components[0]%[-.]}"
 }
+
+version-bump() {
+  local version="$1"
+  local module="$2"
+
+  if [ -z "$UPDATE_VERSION_SCRIPT" ]; then
+    echo >&2 "UPDATE_VERSION_SCRIPT is not set in the builder-env"
+    return 1
+  fi
+  if [ ! -x "$UPDATE_VERSION_SCRIPT" ]; then
+    echo >&2 "UPDATE_VERSION_SCRIPT is not executable: $UPDATE_VERSION_SCRIPT"
+    return 1
+  fi
+
+  "$UPDATE_VERSION_SCRIPT" "$version" "$module"
+}

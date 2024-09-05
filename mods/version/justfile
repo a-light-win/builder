@@ -1,0 +1,18 @@
+set unstable := true
+
+import '../../lib/lib.just'
+
+[no-cd, script('bash')]
+bump version module='': is-clean && (commit version module)
+  source "{{ builtin_bash_functions }}"
+  version-bump "{{ version }}" "{{ module }}"
+
+[private, no-cd, script('bash')]
+is-clean:
+  # check if the working directory is clean
+  git diff --quiet && git diff --cached --quiet
+
+[private, no-cd, script('bash')]
+commit version module='':
+  git add -u
+  git commit -m "Bump {{ if module == '' {''} else { module + ' ' } }}version to {{ version }}"
