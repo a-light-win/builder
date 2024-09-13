@@ -16,7 +16,6 @@ podman-zig() {
 }
 
 zig-build() {
-    set -x
     local arch="$1"
 
     should-skip-arch "$arch" && return 0
@@ -28,9 +27,6 @@ zig-build() {
     podman-zig build \
         --release="${ZIG_RELEASE}" \
         -Dtarget="${target}"
-    ret=$?
-    set +x
-    return $ret
 }
 
 zig-clean() {
