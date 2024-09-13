@@ -1,9 +1,5 @@
 #!/usr/bin/env bash
 
-export BUILDER_REPOSITORY=ghcr.io/a-light-win/builder
-export BUILDER_SOURCE='https://github.com/a-light-win/builder'
-export BUILDER_LICENSES='MIT'
-
 export DEBIAN_IMAGE="${BUILDER_REPOSITORY}/debian"
 export DEBIAN_IMAGE_TAG="${DEBIAN_VERSION}${DEBIAN_VERSION_RELEASE}"
 export DEBIAN_IMAGE_FULL="${DEBIAN_IMAGE}:${DEBIAN_IMAGE_TAG}"
