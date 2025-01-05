@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+
+export GO_IMAGE="$BUILDER_REPOSITORY/golang"
+export GO_IMAGE_TAG="${GO_VERSION}${GO_VERSION_RELEASE}"
+export GO_IMAGE_FULL="${GO_IMAGE}:${GO_IMAGE_TAG}"
+
+podman-go() {
+  export PATH=/go/bin:/usr/local/go/bin:$PATH
+  local go_path="${HOME}/.cache/go"
+  local go_cache_dir="${HOME}/.cache/go-build"
+
+  mkdir -p "$go_path"
+  mkdir -p "$go_cache_dir"
+
+  podman-run \
+    -v "$go_cache_dir":/root/.cache/go-build \
+    -v "$go_path":/go \
+    "$GO_IMAGE_FULL" go "$@"
+}
+
+go-gen() {
+  local arch="$1"
+  export GOARCH=$(go-arch "$arch")
+  export GOOS="linux"
+  export CGO_CFLAGS="-I/usr/include/$arch-linux-gnu"
+
+  # Process each file found by _go_gen_files
+  while IFS= read -r file; do
+    podman-go generate "$file"
+  done < <(_go_gen_files)
+}
+
+_go_gen_files() {
+  # find all go files in the directory gen/ that contain '//go:generate '
+  find gen/ -name '*.go' -exec grep -l '//go:generate ' {} +
+}
+
+go-build() {
+  local arch="$1"
+  export GOARCH="$(go-arch "$arch")"
+  export GOOS="linux"
+
+  mkdir -p dist/bin
+
+  while IFS= read -r dir; do
+    local binary
+    binary=$(basename "$dir" | tr _ -)
+    podman-go build -ldflags '-s -w' -o dist/bin/"$binary" "$dir"/*.go
+  done < <(_go_binaries)
+}
+
+_go_binaries() {
+  # find all files in the cmd/ directory, each directory will generate a binary
+  find cmd -mindepth 1 -maxdepth 1 -type d
+}

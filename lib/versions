@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+export GO_VERSION=1.23.4
+export GO_VERSION_RELEASE=""
+
 export ZIG_VERSION=0.13.0
 # The version_release is the build for the same upstream version.
 # default to "", and for second build, it should be "-1".

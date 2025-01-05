@@ -1,0 +1,28 @@
+set unstable := true
+
+import '../../lib/lib.just'
+
+[no-cd, script('bash')]
+build arch='x86_64': (gen arch)
+  source "{{ builtin_bash_functions }}"
+  go-build "{{ arch }}"
+
+[no-cd, script('bash')]
+gen arch:
+  source "{{ builtin_bash_functions }}"
+  go-gen "{{ arch }}"
+
+[no-cd, script('bash')]
+test:
+  source "{{ builtin_bash_functions }}"
+  go-test
+
+# build and package on all supported architectures
+# with all supported packaging formats
+[no-cd]
+pack-all: pack-x86_64 pack-aarch64
+
+[no-cd]
+pack-x86_64: (build 'x86_64') (nfpm-pack 'x86_64')
+[no-cd]
+pack-aarch64: (build 'aarch64') (nfpm-pack 'aarch64')
