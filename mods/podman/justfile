@@ -5,7 +5,7 @@ import '../../lib/lib.just'
 [no-cd, script('bash')]
 setup:
   source "{{ builtin_bash_functions }}"
-  podman-setup
+  podman-setup || exit $?
   setup-qemu-user-static
 
 [no-cd, script('bash')]

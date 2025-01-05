@@ -39,6 +39,7 @@ go-build() {
   local arch="$1"
   export GOARCH="$(go-arch "$arch")"
   export GOOS="linux"
+  export CGO_CFLAGS="-I/usr/include/$arch-linux-gnu"
 
   mkdir -p dist/bin
 

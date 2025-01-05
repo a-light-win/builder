@@ -9,9 +9,12 @@ RUN apt-get update && apt-get install -y \
   linux-libc-dev \
   libbpf-dev \
   gcc \
+  gcc-aarch64-linux-gnu \
   make \
   iproute2 \
   iputils-ping
+
+RUN cd /usr/include && ln -n -sf ../aarch64-linux-gnu/include aarch64-linux-gnu
 
 # Install protoc for gRPC
 RUN apt-get install -y protobuf-compiler
