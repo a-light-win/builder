@@ -13,7 +13,7 @@ gen arch:
   go-gen "{{ arch }}"
 
 [no-cd, script('bash')]
-test:
+test: (gen 'x86_64')
   source "{{ builtin_bash_functions }}"
   go-test
 

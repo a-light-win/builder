@@ -50,6 +50,11 @@ go-build() {
   done < <(_go_binaries)
 }
 
+go-test() {
+  export CGO_CFLAGS="-I/usr/include/x86_64-linux-gnu"
+  podman-go test -coverprofile=dist/coverage.out ./... || return $?
+}
+
 _go_binaries() {
   # find all files in the cmd/ directory, each directory will generate a binary
   find cmd -mindepth 1 -maxdepth 1 -type d

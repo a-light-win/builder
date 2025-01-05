@@ -1,0 +1,15 @@
+---
+name: go-test
+description: checks and test the go project on pull requests
+inputs:
+  working_directory:
+    description: The path to the go project.
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Test go project
+      run: |
+        just -g go test
+      shell: bash
+      working-directory: ${{ inputs.working_directory }}
