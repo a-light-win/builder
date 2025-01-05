@@ -24,3 +24,8 @@ jobs:
     uses: ./.github/workflows/_image-release.yaml
     with:
       module: nfpm
+
+  build-golang-image:
+    uses: ./.github/workflows/_image-release.yaml
+    with:
+      module: golang
