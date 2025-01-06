@@ -48,9 +48,19 @@ setup-qemu-user-static() {
   which apt-get &>/dev/null
   if [ $? -eq 0 ]; then
     export DEBIAN_FRONTEND=noninteractive
-    sudo apt-get install -y qemu-user-static
+    sudo apt-get install -y qemu-user-static || return $?
     sudo systemctl start systemd-binfmt
+    return $?
   fi
+
+  which pacman &>/dev/null
+  if [ $? -eq 0 ]; then
+    sudo pacman -Sy --noconfirm --needed qemu-user-static qemu-user-static-binfmt || return $?
+    sudo systemctl start systemd-binfmt
+    return $?
+  fi
+
+  echo 2>&1 "Unsupported package manager"
 }
 
 make-nargs() {

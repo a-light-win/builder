@@ -3,9 +3,16 @@ set unstable := true
 import '../../lib/lib.just'
 
 [no-cd, script('bash')]
-setup:
+setup: setup-podman setup-qemu-user-static
+
+[no-cd, script('bash')]
+setup-podman:
   source "{{ builtin_bash_functions }}"
-  podman-setup || exit $?
+  podman-setup
+
+[no-cd, script('bash')]
+setup-qemu-user-static:
+  source "{{ builtin_bash_functions }}"
   setup-qemu-user-static
 
 [no-cd, script('bash')]

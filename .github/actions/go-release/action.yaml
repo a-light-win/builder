@@ -10,6 +10,11 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Setup qemu user static
+      run: |
+        just -g podman setup-qemu-user-static
+      shell: bash
+      working-directory: ${{ inputs.working_directory }}
     - name: Build and Pack
       run: |
         just -g go pack-all
