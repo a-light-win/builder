@@ -10,89 +10,89 @@ export NFPM_IMAGE_FULL="$NFPM_IMAGE:$NFPM_IMAGE_TAG"
 NFPM_DOWNLOAD_URL=https://github.com/goreleaser/nfpm/releases/download
 
 nfpm-pre-pack() {
-    if [ -z "$PKG_VERSION" ]; then
-        echo >&2 "version is required, please provide it with env PKG_VERSION"
-        exit 1
-    fi
+  if [ -z "$PKG_VERSION" ]; then
+    echo >&2 "version is required, please provide it with env PKG_VERSION"
+    exit 1
+  fi
 
-    local output_dir="${PKG_TARGET:-dist}"
-    if [ ! -e "${output_dir}" ]; then
-        mkdir -p "${output_dir}"
-    fi
+  local output_dir="${PKG_TARGET:-dist}"
+  if [ ! -e "${output_dir}" ]; then
+    mkdir -p "${output_dir}"
+  fi
 }
 
 nfpm-pack() {
-    local packager="$1"
-    local arch="$2"
+  local packager="$1"
+  local arch="$2"
 
-    should-skip-arch "$arch" && return 0
-    should-skip-packager "$packager" && return 0
+  should-skip-arch "$arch" &>/dev/null && return 0
+  should-skip-packager "$packager" && return 0
 
-    export PKG_ARCH=$(nfpm-build-arch "$arch")
-    local output_dir="${PKG_TARGET:-dist}"
-    podman-nfpm package \
-        --config "$PKG_CONFIG" \
-        --packager "${packager}" \
-        --target "${output_dir}"
+  export PKG_ARCH=$(nfpm-build-arch "$arch")
+  local output_dir="${PKG_TARGET:-dist}"
+  podman-nfpm package \
+    --config "$PKG_CONFIG" \
+    --packager "${packager}" \
+    --target "${output_dir}"
 }
 
 podman-nfpm() {
-    podman-run "${NFPM_IMAGE_FULL}" nfpm "$@"
+  podman-run "${NFPM_IMAGE_FULL}" nfpm "$@"
 }
 
 nfpm-clean() {
-    local output_dir="${1:-${PKG_TARGET:-dist}}"
+  local output_dir="${1:-${PKG_TARGET:-dist}}"
 
-    echo "Cleaning the packages and checksums in ${output_dir} ..."
-    rm -f "${output_dir}"/*.deb
-    rm -f "${output_dir}"/*.rpm
-    rm -f "${output_dir}"/*.tar.zst
-    rm -f "${output_dir}"/*.apk
-    rm -f "${output_dir}"/*.sha256
+  echo "Cleaning the packages and checksums in ${output_dir} ..."
+  rm -f "${output_dir}"/*.deb
+  rm -f "${output_dir}"/*.rpm
+  rm -f "${output_dir}"/*.tar.zst
+  rm -f "${output_dir}"/*.apk
+  rm -f "${output_dir}"/*.sha256
 }
 
 # list all packages and their checksums
 # and set into the first argument
 nfpm-pkg-files() {
-    local output_dir="${PKG_TARGET:-dist}"
+  local output_dir="${PKG_TARGET:-dist}"
 
-    local -n files__=$1
-    files__=()
+  local -n files__=$1
+  files__=()
 
-    local suffix
-    local file
-    for suffix in deb rpm tar.zst apk; do
-        while IFS= read -r -d '' file; do
-            files__+=("$file")
-            sha256sum "$file" >"$file.sha256"
-            files__+=("$file.sha256")
-        done < <(find "${output_dir}" -name "*.${suffix}" -print0)
-    done
+  local suffix
+  local file
+  for suffix in deb rpm tar.zst apk; do
+    while IFS= read -r -d '' file; do
+      files__+=("$file")
+      sha256sum "$file" >"$file.sha256"
+      files__+=("$file.sha256")
+    done < <(find "${output_dir}" -name "*.${suffix}" -print0)
+  done
 }
 
 should-skip-packager() {
-    local packager="$1"
-    if [ -z "$PKG_PACKAGERS" ]; then
-        return 1
-    fi
-    if ! grep -qw "$packager" <<<"$PKG_PACKAGERS"; then
-        echo "Skipping packager $packager."
-        return 0
-    fi
+  local packager="$1"
+  if [ -z "$PKG_PACKAGERS" ]; then
     return 1
+  fi
+  if ! grep -qw "$packager" <<<"$PKG_PACKAGERS"; then
+    echo "Skipping packager $packager."
+    return 0
+  fi
+  return 1
 }
 
 nfpm-pre-build-image() {
-    local arch="$1"
-    _download-nfpm "$arch" || exit $?
+  local arch="$1"
+  _download-nfpm "$arch" || exit $?
 }
 
 _download-nfpm() {
-    local arch="$1"
-    local name=nfpm_${NFPM_VERSION}_${arch}
-    curl -L -o "${name}.deb" -C - "${NFPM_DOWNLOAD_URL}/v${NFPM_VERSION}/${name}.deb"
+  local arch="$1"
+  local name=nfpm_${NFPM_VERSION}_${arch}
+  curl -L -o "${name}.deb" -C - "${NFPM_DOWNLOAD_URL}/v${NFPM_VERSION}/${name}.deb"
 }
 
 nfpm-build-arch() {
-    go-arch "$1"
+  go-arch "$1"
 }

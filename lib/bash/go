@@ -20,6 +20,11 @@ podman-go() {
 
 go-gen() {
   local arch="$1"
+
+  if should-skip-arch "$arch" &>/dev/null; then
+    return 0
+  fi
+
   export GOARCH=$(go-arch "$arch")
   export GOOS="linux"
   export CGO_CFLAGS="-I/usr/include/$arch-linux-gnu"
@@ -37,6 +42,12 @@ _go_gen_files() {
 
 go-build() {
   local arch="$1"
+
+  echo "Building go project with $arch ..."
+  if should-skip-arch "$arch"; then
+    return 0
+  fi
+
   export GOARCH="$(go-arch "$arch")"
   export GOOS="linux"
   export CGO_CFLAGS="-I/usr/include/$arch-linux-gnu"
