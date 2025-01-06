@@ -52,7 +52,9 @@ go-build() {
 
 go-test() {
   export CGO_CFLAGS="-I/usr/include/x86_64-linux-gnu"
-  podman-go test -coverprofile=dist/coverage.out ./... || return $?
+  local output_dir=${PKG_TARGET:-dist}
+  mkdir -p "${output_dir}"
+  podman-go test -coverprofile=${output_dir}/coverage.out ./... || return $?
 }
 
 _go_binaries() {
