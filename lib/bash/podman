@@ -1,185 +1,209 @@
 #!/usr/bin/env bash
 
 podman-run() {
-    podman run --rm \
-        --env-host \
-        -v $(pwd):$(pwd) \
-        -w $(pwd) \
-        "$@"
+  podman run --rm \
+    --env-host \
+    -v $(pwd):$(pwd) \
+    -w $(pwd) \
+    "$@"
 }
 
 podman-setup() {
-    # debian os family
-    which apt-get
-    if [ $? -eq 0 ]; then
-        echo "Install third-party repository for podman ..."
-        echo 'deb http://download.opensuse.org/repositories/home:/alvistack/xUbuntu_24.04/ /' | sudo tee /etc/apt/sources.list.d/home:alvistack.list >/dev/null || return $?
-        curl -fsSL https://download.opensuse.org/repositories/home:alvistack/xUbuntu_24.04/Release.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/home_alvistack.gpg >/dev/null || return $?
+  # debian os family
+  which apt-get
+  if [ $? -eq 0 ]; then
+    echo "Install third-party repository for podman ..."
 
-        export DEBIAN_FRONTEND=noninteractive
+    local ubuntu_version="24.04"
+    local repo_path="repositories/home:/alvistack/xUbuntu_${ubuntu_version}"
 
-        echo "Try to remove the golang-github-containers-common ..."
-        sudo apt-get remove -y golang-github-containers-common || reuturn $?
-        sudo apt-get autoremove -y
-        sudo apt-get autoclean -y
+    # List of reliable OpenSUSE mirrors
+    local -a OPENSUSE_MIRRORS=(
+      "provo-mirror.opensuse.org"   # US Provo
+      "mirrorcache-eu.opensuse.org" # EU mirror
+    )
 
-        echo "Install the third-party podman ..."
-        sudo apt-get update || return $?
-        sudo apt-get install -y podman uidmap netavark passt slirp4netns
-        return $?
-    fi
+    # Add all mirrors to sources.list.d
+    local mirror sources=""
+    sources+="Enabled: yes\n"
+    sources+="X-Repolib-Name: home-alvistack\n"
+    sources+="Signed-By: /etc/apt/keyrings/home-alvistack.asc\n"
+    sources+="Suites: /\n"
+    sources+="Types: deb\n"
+    sources+="URIs:"
+    for mirror in "${OPENSUSE_MIRRORS[@]}"; do
+      sources+=" https://${mirror}/${repo_path}"
+    done
+    echo -e "${sources}" | sudo tee /etc/apt/sources.list.d/home-alvistack.sources >/dev/null || return $?
 
-    # archlinux
-    which pacman
-    if [ $? -eq 0 ]; then
-        sudo pacman -Sy podman
-        return $?
-    fi
+    # Download Release key from main mirror
+    echo "Downloading Release key..."
+    sudo curl -fsSL --max-time 10 -o /etc/apt/keyrings/home-alvistack.asc "https://download.opensuse.org/repositories/home:alvistack/xUbuntu_${ubuntu_version}/Release.key" || return $?
 
-    echo >&2 "Error: unsupported os family"
-    cat /etc/os-release >&2
-    return 1
+    export DEBIAN_FRONTEND=noninteractive
+
+    echo "Try to remove the golang-github-containers-common ..."
+    sudo apt-get remove -y golang-github-containers-common || reuturn $?
+    sudo apt-get autoremove -y
+    sudo apt-get autoclean -y
+
+    echo "Install the third-party podman ..."
+    sudo apt-get update || return $?
+    sudo apt-get install -y podman uidmap netavark passt slirp4netns
+    return $?
+  fi
+
+  # archlinux
+  which pacman
+  if [ $? -eq 0 ]; then
+    sudo pacman -Sy podman
+    return $?
+  fi
+
+  echo >&2 "Error: unsupported os family"
+  cat /etc/os-release >&2
+  return 1
 }
 
 podman-parse-annotations() {
-    local -n annotations_ref__="$1"
+  local -n annotations_ref__="$1"
 
-    local labels
-    load-array-from-env labels "PKG_LABEL_"
-    labels+=("created=$(date -u -Is)")
+  local labels
+  load-array-from-env labels "PKG_LABEL_"
+  labels+=("created=$(date -u -Is)")
 
-    annotations_ref__=()
-    local label key value
-    for label in "${labels[@]}"; do
-        IFS='=' read -r key value <<<"$label"
-        if [ -z "$key" ] || [ -z "$value" ]; then
-            echo >&2 "Invalid label: $label"
-            exit 1
-        fi
+  annotations_ref__=()
+  local label key value
+  for label in "${labels[@]}"; do
+    IFS='=' read -r key value <<<"$label"
+    if [ -z "$key" ] || [ -z "$value" ]; then
+      echo >&2 "Invalid label: $label"
+      exit 1
+    fi
 
-        grep -q "[.]" <<<"$key"
-        if [ $? -ne 0 ]; then
-            key="org.opencontainers.image.$key"
-        fi
-        annotations_ref__+=("$key=$value")
-    done
+    grep -q "[.]" <<<"$key"
+    if [ $? -ne 0 ]; then
+      key="org.opencontainers.image.$key"
+    fi
+    annotations_ref__+=("$key=$value")
+  done
 }
 
 podman-manifest() {
-    _validate-podman-manifest-args || exit $?
+  _validate-podman-manifest-args || exit $?
 
-    local image="${PKG_IMAGE}:${PKG_VERSION}"
-    podman manifest exists "${image}"
-    if [ $? -eq 0 ]; then
-        echo "Manifest ${image} already exists, skipping"
-        exit 0
-    fi
+  local image="${PKG_IMAGE}:${PKG_VERSION}"
+  podman manifest exists "${image}"
+  if [ $? -eq 0 ]; then
+    echo "Manifest ${image} already exists, skipping"
+    exit 0
+  fi
 
-    local annotations annotation_opts
-    podman-parse-annotations annotations
-    make-nargs annotation_opts "--annotation" "${annotations[@]}"
+  local annotations annotation_opts
+  podman-parse-annotations annotations
+  make-nargs annotation_opts "--annotation" "${annotations[@]}"
 
-    echo "Creating manifest ${image}"
-    podman manifest create "${annotation_opts[@]}" "${image}"
+  echo "Creating manifest ${image}"
+  podman manifest create "${annotation_opts[@]}" "${image}"
 }
 
 podman-manifest-clean() {
-    _validate-podman-manifest-args || exit $?
-    local image="${PKG_IMAGE}:${PKG_VERSION}"
+  _validate-podman-manifest-args || exit $?
+  local image="${PKG_IMAGE}:${PKG_VERSION}"
 
-    if podman manifest exists "${image}"; then
-        echo "Cleaning manifest ${image}"
-        podman manifest rm "${image}"
-    fi
+  if podman manifest exists "${image}"; then
+    echo "Cleaning manifest ${image}"
+    podman manifest rm "${image}"
+  fi
 }
 
 _validate-podman-manifest-args() {
-    if [ -z "$PKG_IMAGE" ]; then
-        echo >&2 "Error: PKG_IMAGE is not set"
-        exit 1
-    fi
-    if [ -z "$PKG_VERSION" ]; then
-        echo >&2 "Error: PKG_VERSION is not set"
-        exit 1
-    fi
+  if [ -z "$PKG_IMAGE" ]; then
+    echo >&2 "Error: PKG_IMAGE is not set"
+    exit 1
+  fi
+  if [ -z "$PKG_VERSION" ]; then
+    echo >&2 "Error: PKG_VERSION is not set"
+    exit 1
+  fi
 }
 
 podman-build() {
-    local arch="$1"
+  local arch="$1"
 
-    should-skip-arch "$arch" && return 0
+  should-skip-arch "$arch" && return 0
 
-    if [ -z "$PKG_IMAGE" ]; then
-        echo >&2 "Error: PKG_IMAGE is not set"
-        return 1
-    fi
-    local image="${PKG_IMAGE}:${PKG_VERSION}"
+  if [ -z "$PKG_IMAGE" ]; then
+    echo >&2 "Error: PKG_IMAGE is not set"
+    return 1
+  fi
+  local image="${PKG_IMAGE}:${PKG_VERSION}"
 
-    local build_args build_arg_opts
-    load-array-from-env build_args "PKG_BUILD_ARG_"
-    make-nargs build_arg_opts "--build-arg" "${build_args[@]}"
+  local build_args build_arg_opts
+  load-array-from-env build_args "PKG_BUILD_ARG_"
+  make-nargs build_arg_opts "--build-arg" "${build_args[@]}"
 
-    local annotations annotation_opts
-    podman-parse-annotations annotations
-    make-nargs annotation_opts "--annotation" "${annotations[@]}"
+  local annotations annotation_opts
+  podman-parse-annotations annotations
+  make-nargs annotation_opts "--annotation" "${annotations[@]}"
 
-    echo "Building ${image} for ${arch} with build args: ${build_args[*]}"
+  echo "Building ${image} for ${arch} with build args: ${build_args[*]}"
 
-    podman build --platform "linux/${arch}" \
-        --manifest="${image}" \
-        "${annotation_opts[@]}" \
-        "${build_arg_opts[@]}" .
+  podman build --platform "linux/${arch}" \
+    --manifest="${image}" \
+    "${annotation_opts[@]}" \
+    "${build_arg_opts[@]}" .
 }
 
 pre-build-image() {
-    local arch="$1"
+  local arch="$1"
 
-    local module fn
-    module=$(basename $(pwd))
-    fn="${module}-pre-build-image"
+  local module fn
+  module=$(basename $(pwd))
+  fn="${module}-pre-build-image"
 
-    if declare -f "${fn}" >/dev/null; then
-        echo "Running $fn for $arch ..."
-        "$fn" "$arch"
-        return 0
-    fi
+  if declare -f "${fn}" >/dev/null; then
+    echo "Running $fn for $arch ..."
+    "$fn" "$arch"
+    return 0
+  fi
 
-    echo "No $fn found, skip pre-build-image action ..."
+  echo "No $fn found, skip pre-build-image action ..."
 }
 
 build-arch() {
-    local arch="$1"
-    local module fn
+  local arch="$1"
+  local module fn
 
-    module=$(basename $(pwd))
-    fn="${module}-build-arch"
-    if declare -f "${fn}" >/dev/null; then
-        "$fn" "$arch"
-        return 0
-    fi
-    echo "$arch"
+  module=$(basename $(pwd))
+  fn="${module}-build-arch"
+  if declare -f "${fn}" >/dev/null; then
+    "$fn" "$arch"
+    return 0
+  fi
+  echo "$arch"
 }
 
 podman-tag-and-push() {
-    podman manifest inspect "${PKG_IMAGE}:${PKG_VERSION}"
+  podman manifest inspect "${PKG_IMAGE}:${PKG_VERSION}"
 
-    podman manifest push "${PKG_IMAGE}:${PKG_VERSION}"
+  podman manifest push "${PKG_IMAGE}:${PKG_VERSION}"
 
-    if version-is-develop "$PKG_VERSION"; then
-        return 0
+  if version-is-develop "$PKG_VERSION"; then
+    return 0
+  fi
+
+  local tag tags
+  version-list tags "$PKG_VERSION"
+  # Only tag the major and minor versions here.
+  # The patch version should not be overridden by the release version.
+  # 1.2.3 -> 1 1.2
+  # 1.2.3-1 -> 1 1.2 # do not tag 1.2.3 here so that we can always gets the original 1.2.3
+  for tag in "${tags[@]:0:2}"; do
+    if [ "$tag" = "$PKG_VERSION" ]; then
+      continue
     fi
-
-    local tag tags
-    version-list tags "$PKG_VERSION"
-    # Only tag the major and minor versions here.
-    # The patch version should not be overridden by the release version.
-    # 1.2.3 -> 1 1.2
-    # 1.2.3-1 -> 1 1.2 # do not tag 1.2.3 here so that we can always gets the original 1.2.3
-    for tag in "${tags[@]:0:2}"; do
-        if [ "$tag" = "$PKG_VERSION" ]; then
-            continue
-        fi
-        podman tag "${PKG_IMAGE}:${PKG_VERSION}" "${PKG_IMAGE}:${tag}"
-        podman manifest push "${PKG_IMAGE}:${tag}"
-    done
+    podman tag "${PKG_IMAGE}:${PKG_VERSION}" "${PKG_IMAGE}:${tag}"
+    podman manifest push "${PKG_IMAGE}:${tag}"
+  done
 }
