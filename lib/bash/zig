@@ -9,54 +9,54 @@ ZIG_GLOBAL_CACHE="${ZIG_GLOBAL_CACHE:=${HOME}/.cache/zig}"
 ZIG_RELEASE="${ZIG_RELEASE:-safe}"
 
 podman-zig() {
-    mkdir -p "${ZIG_GLOBAL_CACHE}"
-    podman-run -v "${ZIG_GLOBAL_CACHE}:${ZIG_GLOBAL_CACHE}" \
-        "${ZIG_IMAGE_FULL}" \
-        zig "$@"
+  mkdir -p "${ZIG_GLOBAL_CACHE}"
+  podman-run -v "${ZIG_GLOBAL_CACHE}:${ZIG_GLOBAL_CACHE}" \
+    "${ZIG_IMAGE_FULL}" \
+    zig "$@"
 }
 
 zig-build() {
-    local arch="$1"
+  local arch="$1"
 
-    should-skip-arch "$arch" && return 0
+  should-skip-arch "$arch" && return 0
 
-    echo "Building project with zig for $arch ..."
-    # target: one of x86_64-linux-musl, aarch64-linux-musl
-    local target="$arch-linux-musl"
+  echo "Building project with zig for $arch ..."
+  # target: one of x86_64-linux-musl, aarch64-linux-musl
+  local target="$arch-linux-musl"
 
-    podman-zig build \
-        --release="${ZIG_RELEASE}" \
-        -Dtarget="${target}"
+  podman-zig build \
+    --release="${ZIG_RELEASE}" \
+    -Dtarget="${target}"
 }
 
 zig-clean() {
-    local output_dir="${PKG_TARGET:-zig-out}"
+  local output_dir="${PKG_TARGET:-zig-out}"
 
-    echo "Cleaning the binaries in ${output_dir}/bin ..."
-    rm -rf "${output_dir}/bin/"*
+  echo "Cleaning the binaries in ${output_dir}/bin ..."
+  rm -rf "${output_dir}/bin/"*
 
-    echo "Cleaning the libraries in ${output_dir}/lib ..."
-    rm -rf "${output_dir}/lib/"*
+  echo "Cleaning the libraries in ${output_dir}/lib ..."
+  rm -rf "${output_dir}/lib/"*
 
-    echo "Cleaning the zig cache in .zig-cache ..."
-    rm -rf .zig-cache/*
+  echo "Cleaning the zig cache in .zig-cache ..."
+  rm -rf .zig-cache/*
 }
 
 zig-pre-build-image() {
-    arch="$1"
-    _download-zig "${arch}" || exit $?
+  arch="$1"
+  _download-zig "${arch}" || exit $?
 }
 
 _download-zig() {
-    local arch="$1"
+  local arch="$1"
 
-    local name="zig-linux-${arch}-${ZIG_VERSION}"
+  local name="zig-${arch}-linux-${ZIG_VERSION}"
 
-    if [ -e "${name}" ]; then
-        echo "The ${name} already downloaded, skipping"
-        exit 0
-    fi
+  if [ -e "${name}" ]; then
+    echo "The ${name} already downloaded, skipping"
+    exit 0
+  fi
 
-    curl -L -o "${name}.tar.xz" "https://ziglang.org/download/${ZIG_VERSION}/${name}.tar.xz" || exit 1
-    tar xf "${name}.tar.xz"
+  curl -L -o "${name}.tar.xz" "https://ziglang.org/download/${ZIG_VERSION}/${name}.tar.xz" || exit 1
+  tar xf "${name}.tar.xz"
 }
