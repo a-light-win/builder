@@ -8,7 +8,7 @@ export ZIG_VERSION=0.14.1
 # default to "", and for second build, it should be "-1".
 export ZIG_VERSION_RELEASE=""
 
-export NFPM_VERSION=2.39.0
+export NFPM_VERSION=2.43.0
 export NFP_VERSION_RELEASE=""
 
 export DEBIAN_VERSION=12
