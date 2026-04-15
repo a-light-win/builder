@@ -3,7 +3,7 @@
 export GO_VERSION=1.26.1
 export GO_VERSION_RELEASE=""
 
-export ZIG_VERSION=0.15.2
+export ZIG_VERSION=0.16.0
 # The version_release is the build for the same upstream version.
 # default to "", and for second build, it should be "-1".
 export ZIG_VERSION_RELEASE="-2"
