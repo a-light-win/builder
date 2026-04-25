@@ -11,7 +11,7 @@ export ZIG_VERSION_RELEASE="-2"
 export NFPM_VERSION=2.46.0
 export NFP_VERSION_RELEASE=""
 
-export DEBIAN_VERSION=12
+export DEBIAN_VERSION=13
 export DEBIAN_VERSION_RELEASE=""
 
 export BUILDER_REPOSITORY=ghcr.io/a-light-win/builder
