@@ -1,5 +1,6 @@
 # Use the official Golang image as the base image
-FROM docker.io/library/golang:1.23.4-bookworm
+ARG GO_VERSION
+FROM docker.io/library/golang:${GO_VERSION}-trixie
 
 # Install necessary dependencies for eBPF
 RUN apt-get update && apt-get install -y \
