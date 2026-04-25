@@ -37,7 +37,9 @@ go-gen() {
 
 _go_gen_files() {
   # find all go files in the directory gen/ that contain '//go:generate '
-  find gen/ -name '*.go' -exec grep -l '//go:generate ' {} +
+  if [ -e gen/ ]; then
+    find gen/ -name '*.go' -exec grep -l '//go:generate ' {} +
+  fi
 }
 
 go-build() {
