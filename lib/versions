@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-export GO_VERSION=1.26.2
-export GO_VERSION_RELEASE=""
+export GO_VERSION=1.27.4
+export GO_VERSION_RELEASE="-1"
 
 export ZIG_VERSION=0.17.1
 # The version_release is the build for the same upstream version.
